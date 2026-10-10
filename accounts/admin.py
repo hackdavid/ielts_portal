@@ -14,6 +14,10 @@ class UserProfileInline(admin.StackedInline):
 class UserAdmin(BaseUserAdmin):
     inlines = [UserProfileInline]
 
+    def get_inlines(self, request, obj):
+        # The profile is created by a post_save signal, so only edit it on change.
+        return self.inlines if obj else []
+
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
