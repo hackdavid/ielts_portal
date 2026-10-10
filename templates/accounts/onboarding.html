@@ -1,43 +1,44 @@
-{% extends "base.html" %}
+{% extends "app/focus.html" %}
 
 {% block title %}Get started | IELTS Portal{% endblock %}
 
+{% block focus_title %}Get started{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-lg" x-data="{ step: {% if form.errors %}2{% else %}1{% endif %} }">
-  <div data-animate class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+<div class="mx-auto mt-6 max-w-lg" x-data="{ step: {% if form.errors %}2{% else %}1{% endif %} }">
+  <div data-animate class="card p-8">
     <p class="text-sm font-medium text-brand">Step <span x-text="step"></span> of 2</p>
-    <h1 class="mt-1 text-2xl font-bold">Set up your practice</h1>
+    <h1 class="mt-1 font-display text-3xl font-extrabold text-ink">Set up your practice</h1>
     <form method="post" class="mt-6 space-y-5" novalidate>
       {% csrf_token %}
       {% if form.non_field_errors %}<p class="text-sm text-red-700">{{ form.non_field_errors|join:" " }}</p>{% endif %}
       <fieldset x-show="step === 1" class="space-y-3">
         <legend class="mb-2 font-semibold">{{ form.primary_exam.label }}</legend>
         {% for choice in form.primary_exam %}
-        <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand/5">
+        <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3.5 transition hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand/5">
           {{ choice.tag }} <span>{{ choice.choice_label }}</span>
         </label>
         {% empty %}
         <p class="text-sm text-slate-600">No exams are available yet.</p>
         {% endfor %}
         {% if form.primary_exam.errors %}<p class="text-sm text-red-700">{{ form.primary_exam.errors|join:" " }}</p>{% endif %}
-        <button type="button" class="w-full rounded-lg bg-brand px-4 py-2.5 font-semibold text-brand-fg" @click="step = 2">Next</button>
+        <button type="button" class="btn-primary w-full" @click="step = 2">Next</button>
       </fieldset>
       <div x-show="step === 2" x-cloak class="space-y-4">
         <label class="block">
           <span class="text-sm font-semibold">Display name</span>
           <input type="text" name="{{ form.display_name.html_name }}" value="{{ form.display_name.value|default:'' }}" maxlength="150"
-                 class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-brand focus:outline-none">
+                 class="field mt-1">
         </label>
         <label class="block">
           <span class="text-sm font-semibold">Target score</span>
           <span class="block text-xs text-slate-500">PTE: 10–90 · IELTS: band 0–9 (steps of 0.5)</span>
           <input type="number" step="0.5" name="{{ form.target_score.html_name }}" value="{{ form.target_score.value|default:'' }}"
-                 class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-brand focus:outline-none">
+                 class="field mt-1">
           {% if form.target_score.errors %}<span class="mt-1 block text-sm text-red-700">{{ form.target_score.errors|join:" " }}</span>{% endif %}
         </label>
         <div class="flex gap-3">
-          <button type="button" class="flex-1 rounded-lg border border-slate-300 px-4 py-2.5 font-semibold" @click="step = 1">Back</button>
-          <button type="submit" class="flex-1 rounded-lg bg-brand px-4 py-2.5 font-semibold text-brand-fg">Finish</button>
+          <button type="button" class="btn-ghost flex-1" @click="step = 1">Back</button>
+          <button type="submit" class="btn-primary flex-1">Finish</button>
         </div>
       </div>
     </form>

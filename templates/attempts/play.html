@@ -1,11 +1,12 @@
-{% extends "base.html" %}
+{% extends "app/focus.html" %}
 {% load static %}
 {% block title %}{{ section.label }} | {{ attempt.exam.name }}{% endblock %}
 {% block extra_head %}<script defer src="{% static 'js/player.js' %}"></script>{% endblock %}
+{% block focus_title %}{{ attempt.exam.name }} · {{ attempt.get_mode_display }}{% endblock %}
 {% block content %}
 {{ clock|json_script:"player-clock" }}
 <section x-data="player({ attempt: '{{ attempt.pk }}', count: {{ items|length }} })" x-init="init()" class="space-y-4" data-testid="player">
-  <div class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm">
+  <div class="sticky top-2 z-10 backdrop-blur-xl flex flex-wrap items-center justify-between gap-3 card px-5 py-3 shadow-sm">
     <div>
       <p class="text-xs uppercase tracking-wide text-slate-500">{{ attempt.exam.name }} · {{ attempt.get_mode_display }}{% if attempt.pack %} · {{ attempt.pack.title }}{% endif %}</p>
       <p class="font-semibold" data-testid="section-name">{{ section.label }} <span class="text-sm font-normal text-slate-500">· section {{ section_index|add:1 }} of {{ sections|length }}</span></p>
@@ -23,7 +24,7 @@
   {% for item in items %}
   <form data-item="{{ item.order }}" x-show="idx === {{ forloop.counter0 }}" @submit.prevent
         @input="queue({{ item.order }}, $el)" @change="queue({{ item.order }}, $el)"
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm {% if reading_split and item.passage %}grid gap-6 lg:grid-cols-2{% endif %}" data-testid="item">
+        class="card p-5 shadow-sm {% if reading_split and item.passage %}grid gap-6 lg:grid-cols-2{% endif %}" data-testid="item">
     {% if reading_split and item.passage %}
     <article class="max-h-[70vh] overflow-auto whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-relaxed" data-testid="passage">{{ item.passage }}</article>
     {% endif %}
@@ -43,11 +44,11 @@
 
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex gap-2">
-      <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 disabled:opacity-40" :disabled="idx === 0" @click="go(idx - 1)" data-testid="prev">Back</button>
-      <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 disabled:opacity-40" :disabled="idx === count - 1" @click="go(idx + 1)" data-testid="next">Next</button>
+      <button type="button" class="btn-ghost disabled:opacity-40" :disabled="idx === 0" @click="go(idx - 1)" data-testid="prev">Back</button>
+      <button type="button" class="btn-ghost disabled:opacity-40" :disabled="idx === count - 1" @click="go(idx + 1)" data-testid="next">Next</button>
     </div>
-    <div class="flex flex-wrap gap-1">{% for item in items %}<button type="button" class="h-8 w-8 rounded-md border text-xs" :class="idx === {{ forloop.counter0 }} ? 'border-brand bg-brand text-brand-fg' : 'border-slate-300'" @click="go({{ forloop.counter0 }})">{{ forloop.counter }}</button>{% endfor %}</div>
-    <button type="button" class="rounded-lg bg-brand px-4 py-2 font-semibold text-brand-fg" @click="confirmOpen = true" data-testid="finish-section">{% if is_last %}Submit test{% else %}Finish section{% endif %}</button>
+    <div class="flex flex-wrap gap-1">{% for item in items %}<button type="button" class="h-8 w-8 rounded-lg border text-xs font-semibold transition" :class="idx === {{ forloop.counter0 }} ? 'border-brand bg-brand text-brand-fg' : 'border-slate-300'" @click="go({{ forloop.counter0 }})">{{ forloop.counter }}</button>{% endfor %}</div>
+    <button type="button" class="btn-primary" @click="confirmOpen = true" data-testid="finish-section">{% if is_last %}Submit test{% else %}Finish section{% endif %}</button>
   </div>
 
   <form method="post" action="{% url 'attempts:next_section' attempt.pk %}" x-ref="advance">{% csrf_token %}<input type="hidden" name="section_index" value="{{ section_index }}"></form>
@@ -56,8 +57,8 @@
       <h2 class="text-lg font-bold">{% if is_last %}Submit your test?{% else %}Finish {{ section.label }}?{% endif %}</h2>
       <p class="mt-2 text-sm text-slate-600">{% if is_last %}You can't change answers after submitting.{% else %}You can't come back to this section.{% endif %}</p>
       <div class="mt-4 flex justify-end gap-2">
-        <button type="button" class="rounded-lg border border-slate-300 px-4 py-2" @click="confirmOpen = false">Cancel</button>
-        <button type="button" class="rounded-lg bg-brand px-4 py-2 font-semibold text-brand-fg" @click="advance()" data-testid="confirm-yes">{% if is_last %}Submit{% else %}Finish section{% endif %}</button>
+        <button type="button" class="btn-ghost" @click="confirmOpen = false">Cancel</button>
+        <button type="button" class="btn-primary" @click="advance()" data-testid="confirm-yes">{% if is_last %}Submit{% else %}Finish section{% endif %}</button>
       </div>
     </div>
   </div>

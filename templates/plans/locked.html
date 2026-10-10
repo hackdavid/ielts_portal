@@ -1,9 +1,12 @@
-{% extends "base.html" %}
+{% extends "app/base.html" %}
 {% block title %}Unlock more practice | IELTS Portal{% endblock %}
+{% block crumbs %}Unlock{% endblock %}
 {% block content %}
-<section class="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-  <h1 class="text-2xl font-bold">Unlock more mocks</h1>
-  <p class="mt-2 text-slate-600">Paid plans arrive in a later phase. Institute students get access from their institute.</p>
-  <a class="mt-4 inline-block font-semibold text-brand hover:underline" href="{% url 'catalog:exam_list' %}">Back to exams</a>
+<section data-animate class="relative isolate mx-auto max-w-2xl overflow-hidden rounded-[1.75rem] bg-aurora p-8 text-center text-white sm:p-12">
+  <div class="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-60"></div>
+  <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-white/10">{% include "components/icon.html" with name="lock" cls="h-6 w-6" %}</span>
+  <h1 class="mt-5 font-display text-3xl font-extrabold">Unlock more mocks</h1>
+  <p class="mx-auto mt-3 max-w-md text-slate-300">Paid plans are on the way. If you study with an institute, ask them for access and it'll unlock on your next page load.</p>
+  <div class="mt-6 flex flex-wrap justify-center gap-3"><a class="btn-light" href="{% url 'catalog:exam_list' %}">Back to exams</a><a class="btn-glass" href="{% url 'pages:contact' %}">Contact us</a></div>
 </section>
 {% endblock %}
