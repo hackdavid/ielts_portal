@@ -29,7 +29,7 @@
         {% endif %}
         <div class="mt-5 flex flex-wrap items-center gap-3">
           <a href="{{ next_step.url }}" class="btn-light" data-testid="next-step-cta">{% include "components/icon.html" with name="play" cls="h-4 w-4" %}{{ next_step.cta }}</a>
-          <span class="text-xs text-slate-400">Picked from your recent scores</span>
+          <span class="text-xs text-slate-400">{% if skills.scored_count %}Picked from your recent scores · rule-based for now{% else %}Your first score starts your path{% endif %}</span>
         </div>
       </div>
       {% endif %}
