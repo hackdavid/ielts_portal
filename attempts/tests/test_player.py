@@ -232,6 +232,22 @@ class PlayerTests(TestCase):
                     attempt.refresh_from_db()
             self.assertEqual(attempt.status, Attempt.Status.SUBMITTED)
 
+    def test_blank_autosave_is_not_answered(self):
+        attempt, _ = self.start(section="listening")
+        self.save(attempt, 1, {"1": "", "2": "  ", "3": []})
+        self.client.post(reverse("attempts:submit", args=[attempt.pk]))
+        response = self.client.get(reverse("attempts:done", args=[attempt.pk]))
+        self.assertContains(response, "Answered 0 of")
+
+    def test_dev_media_hides_recordings(self):
+        from django.http import Http404
+        from django.test import RequestFactory
+
+        from core.views import dev_media
+
+        with self.assertRaises(Http404):
+            dev_media(RequestFactory().get("/"), "assets/2026/10/recordings/x.webm")
+
     def test_dashboard_lists_attempts(self):
         self.user.profile.onboarded_at = timezone.now()
         self.user.profile.save()

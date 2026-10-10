@@ -116,7 +116,9 @@ class DoneView(AttemptMixin, TemplateView):
         if attempt.status == Attempt.Status.IN_PROGRESS:
             return redirect("attempts:play", attempt.pk)
         items = attempt.items.all()
-        answered = sum(1 for i in items if i.response or i.audio_id)
+        answered = sum(
+            1 for i in items if i.audio_id or services.has_answer(i.response)
+        )
         return self.render_to_response(
             self.get_context_data(attempt=attempt, total=len(items), answered=answered)
         )

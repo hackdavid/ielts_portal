@@ -1,9 +1,10 @@
 """URL configuration for the IELTS Portal project."""
 
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+
+from core.views import dev_media
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,4 +16,9 @@ urlpatterns = [
     path("", include("attempts.urls")),
     path("", include("plans.urls")),
     path("", include("pages.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += [
+        re_path(rf"^{settings.MEDIA_URL.strip('/')}/(?P<path>.*)$", dev_media)
+    ]

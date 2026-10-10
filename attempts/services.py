@@ -226,6 +226,16 @@ def sync_clock(attempt):
     return attempt
 
 
+def has_answer(value):
+    if isinstance(value, dict):
+        return any(has_answer(v) for v in value.values())
+    if isinstance(value, list):
+        return any(has_answer(v) for v in value)
+    if isinstance(value, str):
+        return bool(value.strip())
+    return bool(value)
+
+
 def needs_mic_check(attempt):
     return (
         not attempt.meta.get("mic_checked")
