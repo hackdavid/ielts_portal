@@ -39,6 +39,19 @@ class StudentAppTests(TestCase):
     def setUp(self):
         self.client.force_login(self.student)
 
+    def test_mock_list_shows_duration(self):
+        page = self.client.get(reverse("catalog:mock_list", args=[self.exam.slug]))
+        self.assertNotContains(page, "question sets\n · min")
+        self.assertRegex(page.content.decode(), r"\d+ min")
+
+    def test_next_step_counts_attempts_not_items(self):
+        attempt = self.scored("R_TFNG", 2)
+        breakdown = attempt.score_breakdown
+        breakdown.items_summary = breakdown.items_summary * 2
+        breakdown.save()
+        page = self.client.get(reverse("analytics:dashboard"))
+        self.assertContains(page, "1 recent attempt,")
+
     def scored(self, qtype, raw):
         attempt = Attempt.objects.create(
             user=self.student,

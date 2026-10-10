@@ -60,7 +60,10 @@ def labelled_plan(pack):
 
 def exam_packs(exam, request):
     packs = visible(exam.mock_packs.annotate(item_count=Count("items")), request)
-    packs = mark_locked(request, packs.order_by("-is_free", "title"))
+    return with_totals(mark_locked(request, packs.order_by("-is_free", "title")))
+
+
+def with_totals(packs):
     for pack in packs:
         pack.total_sec = sum(
             r["duration_sec"] + r["extra_sec"] for r in pack.section_plan()
@@ -155,7 +158,9 @@ class MockListView(ExamMixin, TemplateView):
             packs = packs.filter(is_free=True)
         context.update(
             exam=exam,
-            packs=mark_locked(self.request, packs.order_by("-is_free", "title")),
+            packs=with_totals(
+                mark_locked(self.request, packs.order_by("-is_free", "title"))
+            ),
             free_chip=_chip(self.request, "free", "1", "Free only"),
         )
         return context

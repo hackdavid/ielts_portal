@@ -77,6 +77,7 @@ def skill_profile(user, exam):
         )
     )
     per_section, per_qtype = defaultdict(list), defaultdict(list)
+    qtype_attempts = defaultdict(set)
     for b in breakdowns:
         for code, data in (b.sections or {}).items():
             value = data.get("band") if b.scale == IELTS else data.get("score")
@@ -86,6 +87,7 @@ def skill_profile(user, exam):
             pct = _item_pct(item)
             if pct is not None:
                 per_qtype[item["qtype"]].append(pct)
+                qtype_attempts[item["qtype"]].add(b.attempt_id)
     skills = [
         {
             "code": code,
@@ -105,7 +107,7 @@ def skill_profile(user, exam):
             weakest_qtype = {
                 "type": qtype,
                 "pct": round(_avg(values)),
-                "count": len(values),
+                "count": len(qtype_attempts[code]),
             }
     overall = [float(b.overall) for b in reversed(breakdowns) if b.overall is not None]
     return {
