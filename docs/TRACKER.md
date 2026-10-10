@@ -76,9 +76,12 @@ Update the checkboxes and the status table in the same PR that delivers the work
 - [x] `User.firebase_uid`, `UserProfile.avatar_url` + migration
 - [x] Login page (Continue with Google) + `static/js/firebase-login.js`; register → login redirect
 - [x] `POST /api/auth/firebase/` exchange, `/api/auth/logout/`, `/api/auth/me/`
-- [x] Role router (`/platform/`, `/org/`, `/onboarding/`, `/dashboard/` stubs)
+- [x] Role router (`/admin/`, `/org/`, `/onboarding/`, `/dashboard/`)
 - [x] Onboarding (primary exam, target)
-- [x] Permission mixins `StudentRequired`, `InstituteAdminRequired`, `SuperAdminRequired`
+- [x] Three roles only (student, org, super admin = Django admin); mixins `StudentRequired`, `OrgRequired`
+- [x] Org access emails (`AccessInvite`) in Django admin → membership on sign-in; independent students default
+- [x] Session `auth_context` re-validated from DB every request; no browser token persistence; no-store on auth pages
+- [x] Student + org dashboards
 - [x] `api.js` auth wiring (`api.onUnauthorized` → login redirect)
 
 **Acceptance**
@@ -87,7 +90,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 - [x] Returning user → dashboard; invited/existing email linked, not duplicated
 - [x] Invalid / non-Google / stale token → 401, no session
 - [x] Logout clears session
-- [x] Superuser `role_primary=super_admin` reaches `/platform/` (stub)
+- [x] Superuser → `/admin/`; org email → `/org/`
 - [x] Unauthorized access to `/org/` → 403
 
 ## Phase 2 — Catalogue (dummy data)

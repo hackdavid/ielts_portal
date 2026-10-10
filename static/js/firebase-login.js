@@ -2,11 +2,11 @@
 import { initializeApp } from "../vendor/firebase/firebase-app.js";
 import {
   GoogleAuthProvider,
+  browserPopupRedirectResolver,
   connectAuthEmulator,
-  getAuth,
-  getRedirectResult,
+  inMemoryPersistence,
+  initializeAuth,
   signInWithPopup,
-  signInWithRedirect,
   signOut,
 } from "../vendor/firebase/firebase-auth.js";
 
@@ -14,16 +14,16 @@ const config = JSON.parse(document.getElementById("firebase-config").textContent
 const button = document.getElementById("google-signin");
 const errorBox = document.getElementById("auth-error");
 
-const auth = getAuth(initializeApp(config.web));
+// In-memory only: the Firebase token never persists in the browser; Django's session is the truth.
+const auth = initializeAuth(initializeApp(config.web), {
+  persistence: inMemoryPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
 if (config.emulatorUrl) connectAuthEmulator(auth, config.emulatorUrl, { disableWarnings: true });
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
 const QUIET_ERRORS = new Set(["auth/popup-closed-by-user", "auth/cancelled-popup-request"]);
-const REDIRECT_FALLBACK = new Set([
-  "auth/popup-blocked",
-  "auth/operation-not-supported-in-this-environment",
-]);
 
 function setBusy(busy) {
   button.disabled = busy;
@@ -50,11 +50,10 @@ async function handle(promise) {
     if (result && result.user) return await exchange(result.user);
   } catch (err) {
     await signOut(auth).catch(() => {});
-    if (REDIRECT_FALLBACK.has(err.code)) return signInWithRedirect(auth, provider);
-    if (!QUIET_ERRORS.has(err.code)) showError(err.message || "Sign-in failed. Please try again.");
+    if (err.code === "auth/popup-blocked") showError("Please allow pop-ups for this site and try again.");
+    else if (!QUIET_ERRORS.has(err.code)) showError(err.message || "Sign-in failed. Please try again.");
   }
   setBusy(false);
 }
 
 button.addEventListener("click", () => handle(signInWithPopup(auth, provider)));
-handle(getRedirectResult(auth));

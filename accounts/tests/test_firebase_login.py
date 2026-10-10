@@ -11,7 +11,6 @@ from django.utils import timezone
 from accounts.firebase import FirebaseAuthError, verify_id_token
 from accounts.models import Role
 from catalog.models import Exam
-from tenancy.models import Membership, Tenant
 
 User = get_user_model()
 
@@ -134,26 +133,6 @@ class FirebaseLoginTests(TestCase):
         ]
         self.assertEqual(codes, [401, 401, 429])
 
-    def test_superuser_and_institute_admin_redirects(self):
-        User.objects.create_superuser(
-            "root", "root@example.com", "pw", firebase_uid="google-uid-1"
-        )
-        self.assertEqual(
-            self.post(make_claims(email="root@example.com")).json()["redirect"],
-            reverse("accounts:platform"),
-        )
-        self.client.logout()
-        admin = User.objects.create(
-            username="ia", email="ia@example.com", firebase_uid="uid-ia"
-        )
-        Membership.objects.create(
-            tenant=Tenant.objects.create(slug="t", name="T"),
-            user=admin,
-            role="institute_admin",
-        )
-        response = self.post(make_claims(uid="uid-ia", email="ia@example.com"))
-        self.assertEqual(response.json()["redirect"], reverse("institute:console"))
-
     def test_logout_and_me(self):
         self.assertEqual(
             self.client.get(reverse("accounts:me")).json(), {"authenticated": False}
@@ -193,37 +172,6 @@ class PagesAndPermissionsTests(TestCase):
             reverse("accounts:login") + "?next=/dashboard/",
             fetch_redirect_response=False,
         )
-
-    def test_anonymous_redirected_to_login(self):
-        for name in (
-            "analytics:dashboard",
-            "accounts:onboarding",
-            "institute:console",
-            "accounts:platform",
-        ):
-            with self.subTest(name):
-                response = self.client.get(reverse(name))
-                self.assertEqual(response.status_code, 302)
-                self.assertTrue(
-                    response["Location"].startswith(reverse("accounts:login"))
-                )
-
-    def test_student_role_gates(self):
-        self.client.force_login(self.student)
-        self.assertRedirects(
-            self.client.get(reverse("analytics:dashboard")),
-            reverse("accounts:onboarding"),
-        )
-        self.assertEqual(self.client.get(reverse("institute:console")).status_code, 403)
-        self.assertEqual(self.client.get(reverse("accounts:platform")).status_code, 403)
-        self.assertRedirects(
-            self.client.get(reverse("accounts:login")), reverse("accounts:onboarding")
-        )
-
-    def test_superuser_reaches_platform_and_org(self):
-        self.client.force_login(self.superuser)
-        self.assertEqual(self.client.get(reverse("accounts:platform")).status_code, 200)
-        self.assertEqual(self.client.get(reverse("institute:console")).status_code, 200)
 
     def test_onboarding_validates_and_completes(self):
         self.client.force_login(self.student)

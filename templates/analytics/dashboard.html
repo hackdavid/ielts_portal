@@ -8,6 +8,7 @@
     {% if profile.avatar_url %}<img src="{{ profile.avatar_url }}" alt="" class="h-14 w-14 rounded-full" referrerpolicy="no-referrer">{% endif %}
     <div>
       <h1 class="text-3xl font-bold">Hi {{ profile.display_name|default:user.email }}</h1>
+      <p class="text-sm font-semibold text-brand" data-testid="student-org">{% if auth_context.tenant_name %}Student · {{ auth_context.tenant_name }}{% else %}Independent learner{% endif %}</p>
       <p class="text-slate-600">Preparing for <strong>{{ profile.primary_exam|default:"—" }}</strong>{% if profile.target_score %} · target <strong>{{ profile.target_score|floatformat:"-1" }}</strong>{% endif %}</p>
     </div>
   </div>

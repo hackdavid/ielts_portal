@@ -1,7 +1,8 @@
 from django.db import transaction
 from django.urls import reverse
+from django.utils import timezone
 
-from tenancy.models import Membership
+from tenancy.models import AccessInvite, Membership
 
 from .firebase import FirebaseAuthError
 from .models import Role, User, UserProfile
@@ -31,6 +32,7 @@ def user_from_claims(claims, email):
             user.save()
     if not user.is_active:
         raise FirebaseAuthError("This account is disabled.")
+    apply_invitations(user)
 
     profile = get_profile(user)
     updates = []
@@ -46,27 +48,62 @@ def user_from_claims(claims, email):
     return user
 
 
-def is_super_admin(user):
-    return user.is_authenticated and (
-        user.is_superuser or get_profile(user).role_primary == Role.SUPER_ADMIN
+def apply_invitations(user):
+    """Turn active access emails for this user into memberships."""
+    if not user.email:
+        return
+    now = timezone.now()
+    invites = AccessInvite.objects.filter(email__iexact=user.email, is_active=True)
+    for invite in invites.select_related("tenant"):
+        Membership.objects.update_or_create(
+            tenant=invite.tenant,
+            user=user,
+            defaults={"role": invite.role, "is_active": True, "joined_at": now},
+        )
+        if invite.accepted_by_id is None:
+            invite.accepted_by, invite.accepted_at = user, now
+            invite.save(update_fields=["accepted_by", "accepted_at", "updated_at"])
+
+
+def resolve_auth_context(user):
+    """Role + org for a signed-in user, always computed from the database."""
+    if user.is_superuser:
+        return {"role": Role.SUPER_ADMIN, "tenant_id": None, "tenant_name": ""}
+    memberships = (
+        Membership.objects.filter(user=user, is_active=True, tenant__is_active=True)
+        .select_related("tenant")
+        .order_by("-role", "created_at")  # "student" sorts after "org"
     )
+    membership = memberships.first()
+    if membership is None:
+        return {"role": Role.STUDENT, "tenant_id": None, "tenant_name": ""}
+    role = Role.ORG if membership.role == Membership.Role.ORG else Role.STUDENT
+    return {
+        "role": role,
+        "tenant_id": membership.tenant_id,
+        "tenant_name": membership.tenant.name,
+    }
 
 
-def is_institute_admin(user):
-    if not user.is_authenticated:
-        return False
-    if get_profile(user).role_primary == Role.INSTITUTE_ADMIN:
-        return True
-    return Membership.objects.filter(
-        user=user, is_active=True, role=Membership.Role.INSTITUTE_ADMIN
-    ).exists()
+def sync_auth_context(request):
+    """Refresh role/org in the session and keep UserProfile.role_primary in step."""
+    context = resolve_auth_context(request.user)
+    if request.session.get("auth_context") != context:
+        request.session["auth_context"] = context
+        profile = get_profile(request.user)
+        if profile.role_primary != context["role"]:
+            profile.role_primary = context["role"]
+            profile.save(update_fields=["role_primary", "updated_at"])
+    request.auth_context = context
+    return context
 
 
-def home_url_for(user):
+def home_url_for(user, context=None):
     """Role-aware landing page after sign-in."""
-    if is_super_admin(user):
-        return reverse("accounts:platform")
-    if is_institute_admin(user):
+    context = context or resolve_auth_context(user)
+    if context["role"] == Role.SUPER_ADMIN:
+        return reverse("admin:index")
+    if context["role"] == Role.ORG:
         return reverse("institute:console")
     if get_profile(user).onboarded_at is None:
         return reverse("accounts:onboarding")

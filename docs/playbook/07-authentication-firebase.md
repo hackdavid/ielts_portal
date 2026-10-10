@@ -159,3 +159,24 @@ Dependencies: `firebase-admin` 7.x (Python). Firebase Web SDK 12.19.0 vendored a
 - CSRF required on the exchange endpoint (sent by `api.js`).
 - Rotate session on login (`login()` does this).
 - Log failed verifications with reason, never the token.
+
+
+## Roles, org access and session checks (implemented)
+
+**Three roles only** (`accounts.Role`): `student`, `org`, `super_admin`. Super admin = Django superuser; Google sign-in sends them to `/admin/`. No tutor/platform roles.
+
+**Org access by email.** Super admins open Django admin → Tenancy → Tenants → *Access emails* (`tenancy.AccessInvite`: email, role `org`|`student`, active). Any number of emails per org. On Google sign-in (and immediately if the user already exists) each active invite becomes a `Membership`.
+
+| Situation | Role | Lands on |
+|-----------|------|----------|
+| Superuser | super_admin | `/admin/` |
+| Active `org` membership in an active tenant | org | `/org/` (org dashboard: members, pending invites) |
+| `student` membership | student (with org) | onboarding → `/dashboard/` |
+| No invite | student (independent, no org) | onboarding → `/dashboard/` |
+
+**Backend is the only source of truth.**
+- Firebase runs with `inMemoryPersistence`: the token is used once for `/api/auth/firebase/` and never stored in the browser.
+- `accounts.middleware.AuthContextMiddleware` recomputes role/org from the DB on every request and stores it in `request.session["auth_context"]` (also exposed to templates as `auth_context`). Revoked membership or inactive org takes effect on the next request; disabled users are dropped by `ModelBackend` (session becomes anonymous).
+- Authenticated responses are `Cache-Control: private, no-store`; `app.js` re-checks `/api/auth/me/` when the tab becomes visible (and every 5 min) and reloads bfcache-restored pages.
+- Navbar is server-rendered: *Dashboard / Log out* (+ role badge) when signed in, *Login / Register* otherwise.
+- Mixins: `StudentRequiredMixin`, `OrgRequiredMixin` (403 for other roles).

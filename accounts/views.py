@@ -14,8 +14,9 @@ from django.views.generic import RedirectView, TemplateView, UpdateView
 
 from .firebase import FirebaseAuthError, validate_claims, verify_id_token
 from .forms import OnboardingForm
-from .permissions import RoleRequiredMixin, SuperAdminRequiredMixin
-from .services import get_profile, home_url_for, user_from_claims
+from .models import Role
+from .permissions import RoleRequiredMixin
+from .services import get_profile, home_url_for, sync_auth_context, user_from_claims
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +66,8 @@ class RegisterView(RedirectView):
 
 
 class HomeRedirectView(RoleRequiredMixin, RedirectView):
-    def has_role(self, user):
-        return True
-
     def get_redirect_url(self, *args, **kwargs):
-        return home_url_for(self.request.user)
+        return home_url_for(self.request.user, self.request.auth_context)
 
 
 @require_POST
@@ -94,8 +92,9 @@ def firebase_login(request):
         return JsonResponse({"error": str(exc)}, status=401)
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-    target = home_url_for(user)
-    if get_profile(user).onboarded_at is not None:
+    context = sync_auth_context(request)
+    target = home_url_for(user, context)
+    if context["role"] == Role.STUDENT and get_profile(user).onboarded_at is not None:
         target = _safe_next(request, payload.get("next")) or target
     return JsonResponse({"ok": True, "redirect": target})
 
@@ -112,15 +111,17 @@ def me(request):
     if not user.is_authenticated:
         return JsonResponse({"authenticated": False})
     profile = get_profile(user)
+    context = request.auth_context or sync_auth_context(request)
     return JsonResponse(
         {
             "authenticated": True,
+            "org": context["tenant_name"],
             "email": user.email,
             "display_name": profile.display_name,
             "avatar_url": profile.avatar_url,
-            "role": profile.role_primary,
+            "role": context["role"],
             "onboarded": profile.onboarded_at is not None,
-            "home_url": home_url_for(user),
+            "home_url": home_url_for(user, context),
         }
     )
 
@@ -129,9 +130,7 @@ class OnboardingView(RoleRequiredMixin, UpdateView):
     template_name = "accounts/onboarding.html"
     form_class = OnboardingForm
     success_url = reverse_lazy("accounts:home")
-
-    def has_role(self, user):
-        return True
+    roles = (Role.STUDENT,)
 
     def get_object(self, queryset=None):
         return get_profile(self.request.user)
@@ -139,7 +138,3 @@ class OnboardingView(RoleRequiredMixin, UpdateView):
     def form_valid(self, form):
         form.instance.onboarded_at = form.instance.onboarded_at or timezone.now()
         return super().form_valid(form)
-
-
-class PlatformView(SuperAdminRequiredMixin, TemplateView):
-    template_name = "accounts/platform.html"

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 
 from core.models import TimeStampedModel
 
@@ -21,8 +22,7 @@ class Tenant(TimeStampedModel):
 class Membership(TimeStampedModel):
     class Role(models.TextChoices):
         STUDENT = "student", "Student"
-        TUTOR = "tutor", "Tutor"
-        INSTITUTE_ADMIN = "institute_admin", "Institute admin"
+        ORG = "org", "Organisation"
 
     tenant = models.ForeignKey(
         Tenant, on_delete=models.CASCADE, related_name="memberships"
@@ -45,3 +45,36 @@ class Membership(TimeStampedModel):
 
     def __str__(self):
         return f"{self.user} @ {self.tenant} ({self.role})"
+
+
+class AccessInvite(TimeStampedModel):
+    """Email granted access to an org by a super admin; applied on Google sign-in."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="invites")
+    email = models.EmailField()
+    role = models.CharField(
+        max_length=20, choices=Membership.Role.choices, default=Membership.Role.STUDENT
+    )
+    is_active = models.BooleanField(default=True)
+    accepted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                "tenant", Lower("email"), name="uniq_invite_tenant_email"
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.email} → {self.tenant} ({self.role})"

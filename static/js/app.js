@@ -25,3 +25,21 @@ if (window.api) {
     location.href = "/accounts/login/?next=" + encodeURIComponent(location.pathname + location.search);
   });
 }
+
+// Never trust browser state for auth: re-ask Django whenever the tab comes back.
+if (window.api && document.body.dataset.authenticated === "true") {
+  const recheck = () =>
+    window.api.get("/auth/me/").then((me) => {
+      if (!me.authenticated) {
+        location.href = "/accounts/login/?next=" + encodeURIComponent(location.pathname);
+      }
+    }).catch(() => {});
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") recheck();
+  });
+  setInterval(recheck, 5 * 60 * 1000);
+}
+// Page restored from the back/forward cache after logout → fetch it fresh.
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) location.reload();
+});

@@ -30,9 +30,8 @@ class User(AbstractUser):
 
 class Role(models.TextChoices):
     STUDENT = "student", "Student"
-    TUTOR = "tutor", "Tutor"
-    INSTITUTE_ADMIN = "institute_admin", "Institute admin"
-    SUPER_ADMIN = "super_admin", "Super admin"
+    ORG = "org", "Organisation"
+    SUPER_ADMIN = "super_admin", "Super admin (Django admin)"
 
 
 class UserProfile(TimeStampedModel):

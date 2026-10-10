@@ -9,7 +9,6 @@ urlpatterns = [
     path("accounts/register/", views.RegisterView.as_view(), name="register"),
     path("accounts/home/", views.HomeRedirectView.as_view(), name="home"),
     path("onboarding/", views.OnboardingView.as_view(), name="onboarding"),
-    path("platform/", views.PlatformView.as_view(), name="platform"),
     path("api/auth/firebase/", views.firebase_login, name="firebase_login"),
     path("api/auth/logout/", views.logout_view, name="logout"),
     path("api/auth/me/", views.me, name="me"),
