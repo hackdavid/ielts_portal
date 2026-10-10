@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Mocks | {{ exam.name }}{% endblock %}
+{% block content %}
+{% with crumb="Mocks" %}{% include "catalog/_crumbs.html" %}{% endwith %}
+<section data-animate>
+  <h1 class="text-3xl font-bold">{{ exam.name }} mocks</h1>
+  <div class="mt-4 flex gap-2">{% with chip=free_chip %}{% include "catalog/_chip.html" %}{% endwith %}</div>
+  <div class="mt-6 grid gap-4 md:grid-cols-2">
+    {% for pack in packs %}{% include "catalog/_pack_card.html" %}{% empty %}<p class="text-slate-600">No mocks match.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

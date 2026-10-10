@@ -10,7 +10,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | 0 | Skeleton | Done | Settings split, apps, Tailwind build, Alpine + Motion, `api.js`, health API |
 | — | Data models (05) | Done | All models from [05-data-models.md](playbook/05-data-models.md) + admin + initial migrations |
 | 1 | Auth & profiles (Google via Firebase) | Done | Design in [07](playbook/07-authentication-firebase.md); `accounts.User` + `UserProfile` already in place |
-| 2 | Catalogue (dummy data) | Not started | Catalog models ready; needs `seed_demo` + screens |
+| 2 | Catalogue (dummy data) | Done | Catalog models ready; needs `seed_demo` + screens |
 | 3 | Take mock (dummy) | Not started | `Attempt` / `AttemptItem` models ready |
 | 4 | Scoring stubs | Not started | `ScoreBreakdown` / `ScoringConfig` models ready |
 | 5 | Analytics | Not started | |
@@ -34,6 +34,8 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | `Exam.slug` | not in 05 | added | Screens use `/exams/<slug>/` |
 | Auth | Email/password (django-allauth or built-in) | Google sign-in via Firebase → Django session; `/admin/` keeps password login | Product decision; see [07](playbook/07-authentication-firebase.md) |
 | Exams | Seeded in Phase 2 `seed_demo` | 4 `Exam` rows seeded by data migration `catalog/0002_seed_exams` | Onboarding needs an exam to pick |
+| Demo data | JSON fixtures | Python definitions in `catalog/demo.py` (`update_or_create`) | Idempotent re-runs; easy to generate 3 questions × every type |
+| Catalogue access | Public browse | Login required for everything | User decision |
 | Frontend API | — | `static/js/api.js` (`window.api`) | Single place for CSRF, auth headers, errors |
 
 ---
@@ -96,18 +98,19 @@ Update the checkboxes and the status table in the same PR that delivers the work
 ## Phase 2 — Catalogue (dummy data)
 
 - [x] Catalog models
-- [ ] `seed_demo` management command + JSON fixtures (idempotent)
-- [ ] Catalogue screens (exam list/detail, qtype list, mock list/detail)
-- [ ] Prediction filter chip
-- [ ] Locked state UI for non-entitled packs
+- [x] `seed_demo` management command (idempotent; data defined in `catalog/demo.py`)
+- [x] Catalogue screens (exam list/detail, qtype list, mock list/detail)
+- [x] Prediction filter chip
+- [x] Locked state UI for non-entitled packs (`Entitlement` keys `pack:<id>` / `unlimited`, user or org)
+- [x] Login required for every catalogue page (user decision)
 
 **Acceptance**
 
-- [ ] ≥1 free mock pack per PTE Academic & IELTS Academic
-- [ ] ≥3 questions for each major engine family used in Phase 3
-- [ ] Filters update list without 500s
-- [ ] No copyrighted stems — placeholders only
-- [ ] Answer keys never appear in HTML source of catalogue pages
+- [x] ≥1 free mock pack per PTE Academic & IELTS Academic
+- [x] ≥3 questions for each major engine family used in Phase 3
+- [x] Filters update list without 500s
+- [x] No copyrighted stems — placeholders only
+- [x] Answer keys never appear in HTML source of catalogue pages
 
 ## Phase 3 — Take mock with dummy responses
 

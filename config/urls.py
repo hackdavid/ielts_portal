@@ -11,5 +11,7 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("", include("analytics.urls")),
     path("", include("institute.urls")),
+    path("", include("catalog.urls")),
+    path("", include("plans.urls")),
     path("", include("pages.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

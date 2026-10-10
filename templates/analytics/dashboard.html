@@ -15,7 +15,7 @@
   <div class="grid gap-4 md:grid-cols-3">
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p class="text-sm text-slate-500">Free mocks left</p><p class="mt-1 text-2xl font-bold">{{ profile.free_mocks_remaining }}</p></div>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p class="text-sm text-slate-500">Attempts</p><p class="mt-1 text-2xl font-bold">0</p></div>
-    <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-5"><p class="text-sm text-slate-500">Mock tests and practice arrive in Phase 2–3.</p></div>
+    <a href="{% if profile.primary_exam %}{% url 'catalog:exam_detail' profile.primary_exam.slug %}{% else %}{% url 'catalog:exam_list' %}{% endif %}" class="rounded-2xl border border-brand/30 bg-white p-5 shadow-sm hover:border-brand"><p class="text-sm text-slate-500">Practice</p><p class="mt-1 font-semibold text-brand">Browse mocks &amp; questions →</p></a>
   </div>
 </section>
 {% endblock %}

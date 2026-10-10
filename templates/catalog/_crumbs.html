@@ -1,0 +1,1 @@
+<nav class="mb-4 text-sm text-slate-500"><a class="hover:text-brand" href="{% url 'catalog:exam_list' %}">Exams</a>{% if exam %} / <a class="hover:text-brand" href="{% url 'catalog:exam_detail' exam.slug %}">{{ exam.name }}</a>{% endif %}{% if crumb %} / <span class="text-slate-700">{{ crumb }}</span>{% endif %}</nav>

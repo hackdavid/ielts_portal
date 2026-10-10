@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ qtype.name }} | {{ exam.name }}{% endblock %}
+{% block content %}
+{% with crumb=qtype.name %}{% include "catalog/_crumbs.html" %}{% endwith %}
+<section data-animate>
+  <h1 class="text-3xl font-bold">{{ qtype.name }}</h1>
+  <p class="mt-1 text-sm text-slate-500">{{ qtype.get_section_display }} · {{ qtype.code }}{% if qtype.default_time_sec %} · {{ qtype.default_time_sec }}s per question{% endif %}</p>
+  <div class="mt-6 flex flex-wrap items-center gap-2" data-testid="filters">
+    {% with chip=prediction_chip %}{% include "catalog/_chip.html" %}{% endwith %}
+    <span class="mx-1 h-5 w-px bg-slate-300"></span>
+    {% for chip in difficulty_chips %}{% include "catalog/_chip.html" %}{% endfor %}
+    <span class="mx-1 h-5 w-px bg-slate-300"></span>
+    {% for chip in topic_chips %}{% include "catalog/_chip.html" %}{% endfor %}
+    {% if filtered %}<a href="?" class="ml-2 text-sm text-slate-500 hover:text-brand">Clear</a>{% endif %}
+  </div>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-50 text-slate-500"><tr><th class="px-5 py-2">Question</th><th class="px-5 py-2">Difficulty</th><th class="px-5 py-2">Topics</th><th class="px-5 py-2"></th></tr></thead>
+      <tbody>
+        {% for q in questions %}
+        <tr class="border-t border-slate-100" data-testid="question-row">
+          <td class="px-5 py-3 font-medium">{{ q.title }}{% if q.is_prediction %} <span class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">Prediction</span>{% endif %}</td>
+          <td class="px-5 py-3">Level {{ q.difficulty }}</td>
+          <td class="px-5 py-3 text-slate-600">{% for t in q.tags.all %}{% if t.kind == "topic" %}{{ t.label }}{% endif %}{% endfor %}</td>
+          <td class="px-5 py-3 text-right"><button type="button" disabled title="Question practice arrives in Phase 3" class="rounded-lg border border-slate-300 px-3 py-1 text-slate-400">Practice</button></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-5 py-6 text-center text-slate-500">No questions match these filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

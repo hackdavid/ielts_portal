@@ -49,6 +49,10 @@ uv run python manage.py tailwind --watch  # rebuild on change while developing
 
 The first run downloads the pinned standalone Tailwind CLI (no Node needed).
 
+## Demo catalogue
+
+`uv run python manage.py seed_demo` creates placeholder question types, 3 questions per type and a free + a locked mock for each exam (safe to re-run). Browse at `/exams/` after signing in.
+
 ## Sign-in (Google via Firebase)
 
 `/accounts/login/` → **Continue with Google** (Firebase popup) → the ID token is POSTed once to `/api/auth/firebase/`, verified server-side, and swapped for a normal Django session. No passwords; `/admin/` keeps Django password login for superusers. Dev uses the public web config in `config/settings/dev.py`; set `FIREBASE_*` env vars (see `.env.example`) for other projects. Add every host you serve from to Firebase → Authentication → Settings → Authorized domains. Details: [`docs/playbook/07-authentication-firebase.md`](docs/playbook/07-authentication-firebase.md).
