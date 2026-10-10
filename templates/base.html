@@ -1,25 +1,40 @@
 {% load static %}<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}IELTS Portal{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block brand_vars %}{% endblock %}
+  <script defer src="{% static 'vendor/motion.js' %}"></script>
+  <script defer src="{% static 'js/api.js' %}"></script>
+  <script defer src="{% static 'js/app.js' %}"></script>
+  {% block extra_head %}{% endblock %}
+  <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
 </head>
-<body>
-  <header class="site-header">
-    <a class="brand" href="{% url 'pages:home' %}">IELTS Portal</a>
-    <nav>
-      <a href="{% url 'pages:home' %}">Home</a>
-      <a href="{% url 'pages:about' %}">About</a>
-      <a href="{% url 'pages:contact' %}">Contact</a>
-    </nav>
+<body class="flex min-h-full flex-col bg-slate-50 text-slate-800 antialiased">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <a class="text-xl font-bold text-brand" href="{% url 'pages:home' %}">IELTS Portal</a>
+      <nav class="flex gap-6 text-sm font-medium">
+        <a class="hover:text-brand" href="{% url 'pages:home' %}">Home</a>
+        <a class="hover:text-brand" href="{% url 'pages:about' %}">About</a>
+        <a class="hover:text-brand" href="{% url 'pages:contact' %}">Contact</a>
+      </nav>
+    </div>
   </header>
-  <main class="container">
+
+  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
     {% block content %}{% endblock %}
   </main>
-  <footer class="site-footer">
-    <p>&copy; {% now "Y" %} IELTS Portal</p>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto max-w-6xl space-y-3 px-4 py-6 text-sm text-slate-500">
+      {% include "components/disclaimer.html" %}
+      <p>&copy; {% now "Y" %} IELTS Portal</p>
+    </div>
   </footer>
+  {% block extra_body %}{% endblock %}
 </body>
 </html>

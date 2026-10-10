@@ -1,0 +1,21 @@
+@import "tailwindcss" source(none);
+
+@source "../../templates";
+@source "../js";
+
+/* Tenant branding overrides --brand / --brand-fg at runtime (see 04-low-level-screens). */
+@theme {
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+}
+
+@layer base {
+  :root {
+    --brand: #0f766e;
+    --brand-fg: #ffffff;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+}

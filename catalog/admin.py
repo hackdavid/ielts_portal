@@ -1,0 +1,114 @@
+from django.contrib import admin
+
+from .models import (
+    Asset,
+    Exam,
+    MockPack,
+    MockPackItem,
+    Question,
+    QuestionType,
+    StudyAid,
+    Tag,
+)
+
+
+class QuestionTypeInline(admin.TabularInline):
+    model = QuestionType
+    extra = 0
+    fields = ["code", "name", "section", "engine", "default_time_sec"]
+    show_change_link = True
+
+
+@admin.register(Exam)
+class ExamAdmin(admin.ModelAdmin):
+    list_display = ["name", "code", "kind", "is_active"]
+    list_filter = ["kind", "is_active"]
+    search_fields = ["name", "code"]
+    prepopulated_fields = {"slug": ["name"]}
+    inlines = [QuestionTypeInline]
+
+
+@admin.register(QuestionType)
+class QuestionTypeAdmin(admin.ModelAdmin):
+    list_display = ["code", "name", "exam", "section", "engine", "default_time_sec"]
+    list_filter = ["exam", "section", "engine"]
+    search_fields = ["code", "name"]
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["label", "slug", "kind"]
+    list_filter = ["kind"]
+    search_fields = ["label", "slug"]
+    prepopulated_fields = {"slug": ["label"]}
+
+
+@admin.register(Asset)
+class AssetAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "kind",
+        "file",
+        "content_type",
+        "duration_ms",
+        "tenant",
+        "created_at",
+    ]
+    list_filter = ["kind", "tenant"]
+    search_fields = ["file", "content_type"]
+
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = [
+        "title",
+        "exam",
+        "question_type",
+        "difficulty",
+        "is_prediction",
+        "is_active",
+        "version",
+        "tenant",
+    ]
+    list_filter = [
+        "exam",
+        "question_type__section",
+        "is_prediction",
+        "is_active",
+        "difficulty",
+    ]
+    search_fields = ["title"]
+    autocomplete_fields = ["question_type", "tenant", "tags", "assets"]
+    readonly_fields = ["id", "created_at", "updated_at"]
+
+
+class MockPackItemInline(admin.TabularInline):
+    model = MockPackItem
+    extra = 0
+    autocomplete_fields = ["question"]
+
+
+@admin.register(MockPack)
+class MockPackAdmin(admin.ModelAdmin):
+    list_display = ["title", "exam", "mode_default", "is_free", "is_active", "tenant"]
+    list_filter = ["exam", "mode_default", "is_free", "is_active"]
+    search_fields = ["title", "slug"]
+    prepopulated_fields = {"slug": ["title"]}
+    inlines = [MockPackItemInline]
+
+
+@admin.register(StudyAid)
+class StudyAidAdmin(admin.ModelAdmin):
+    list_display = ["title", "exam", "is_active", "updated_at"]
+    list_filter = ["exam", "is_active"]
+    search_fields = ["title", "slug"]
+    prepopulated_fields = {"slug": ["title"]}
+    autocomplete_fields = ["tags"]
+
+
+@admin.register(MockPackItem)
+class MockPackItemAdmin(admin.ModelAdmin):
+    list_display = ["pack", "order", "question", "section_code", "time_override_sec"]
+    list_filter = ["pack__exam", "section_code"]
+    search_fields = ["pack__title", "question__title"]
+    autocomplete_fields = ["pack", "question"]

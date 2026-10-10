@@ -14,3 +14,10 @@ class PublicPagesTests(SimpleTestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertTemplateUsed(response, template)
                 self.assertTemplateUsed(response, "base.html")
+                self.assertContains(response, "css/app.css")
+                self.assertContains(response, "js/api.js")
+
+    def test_landing_lists_exam_placeholders(self):
+        response = self.client.get(reverse("pages:home"))
+        for name in ("PTE Academic", "PTE Core", "IELTS Academic", "IELTS General"):
+            self.assertContains(response, name)
