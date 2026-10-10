@@ -141,22 +141,22 @@ Update the checkboxes and the status table in the same PR that delivers the work
 ## Phase 4 — Scoring stubs
 
 - [x] `ScoreBreakdown`, `ScoringConfig` models
-- [ ] `ScoringConfig` seeded per exam
-- [ ] `DeterministicScorer` (selection/FIB/reorder/WFD/HIW/TFNG/matching)
-- [ ] `DummyAIScorer` (speaking/writing)
-- [ ] `score_attempt` task (sync fallback for dev)
-- [ ] Results + review item pages with disclaimer
-- [ ] Re-score admin action (optional)
+- [x] `ScoringConfig` seeded per exam
+- [x] `DeterministicScorer` (selection/FIB/reorder/WFD/HIW/TFNG/matching)
+- [x] `DummyAIScorer` (speaking/writing)
+- [x] `score_attempt` task (sync fallback for dev) — runs inline on submit (`SCORING_INLINE`); `manage.py score_attempts` is the worker/retry until Celery/Redis lands
+- [x] Results + review item pages with disclaimer
+- [x] Re-score admin action (optional)
 
 **Acceptance**
 
-- [ ] MCQ/FIB/reorder scores match documented formulas on fixture keys
-- [ ] WFD partial credit returns mid scores for partial typing
-- [ ] Writing/speaking leave `pending` then resolve via dummy traits
-- [ ] PTE attempt shows communicative sections + enabling JSON
-- [ ] IELTS attempt shows band-style overall + writing/speaking traits
-- [ ] UI never says “official”
-- [ ] Failed worker sets Attempt FAILED + retry works
+- [x] MCQ/FIB/reorder scores match documented formulas on fixture keys
+- [x] WFD partial credit returns mid scores for partial typing
+- [x] Writing/speaking leave `pending` then resolve via dummy traits
+- [x] PTE attempt shows communicative sections + enabling JSON
+- [x] IELTS attempt shows band-style overall + writing/speaking traits
+- [x] UI never says “official”
+- [x] Failed worker sets Attempt FAILED + retry works
 
 ## Phase 5 — Analytics
 

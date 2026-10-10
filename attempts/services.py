@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
@@ -64,7 +65,7 @@ def _create(request, *, exam, pack, mode, section_code, sections, entries, key):
                 "_part": part,
                 "_audio": question.audio.file.url if question.audio_id else None,
             },
-            answer_key_snapshot=question.answer_key,
+            answer_key_snapshot={**question.answer_key, "_meta": question.scorer_meta},
             time_limit_sec=limit,
         )
         for order, (code, question, limit, part) in enumerate(entries, start=1)
@@ -194,6 +195,11 @@ def finalize(attempt):
             )
             locked.items.filter(submitted_at__isnull=True).update(submitted_at=now)
     attempt.refresh_from_db()
+    if attempt.status == Attempt.Status.SUBMITTED and settings.SCORING_INLINE:
+        from scoring.services import score_attempt
+
+        score_attempt(attempt)
+        attempt.refresh_from_db()
     return attempt
 
 

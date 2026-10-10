@@ -153,6 +153,10 @@ FIREBASE_ALLOWED_EMAIL_DOMAINS = [
 FIREBASE_MAX_AUTH_AGE_SECONDS = 300
 FIREBASE_LOGIN_RATE_LIMIT_PER_MINUTE = 10
 
+# Score attempts right after submission. Set False when a worker runs
+# `manage.py score_attempts` instead.
+SCORING_INLINE = os.environ.get("SCORING_INLINE", "1") == "1"
+
 PRACTICE_SCORE_DISCLAIMER = (
     "Practice scores are approximations — not official Pearson/IELTS results."
 )

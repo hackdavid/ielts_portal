@@ -125,7 +125,7 @@ class PlayerTests(TestCase):
                 {"section_index": i},
             )
         attempt.refresh_from_db()
-        self.assertEqual(attempt.status, Attempt.Status.SUBMITTED)
+        self.assertEqual(attempt.status, Attempt.Status.SCORED)
         stamp = attempt.submitted_at
         response = self.client.post(reverse("attempts:submit", args=[attempt.pk]))
         self.assertRedirects(response, reverse("attempts:done", args=[attempt.pk]))
@@ -133,7 +133,7 @@ class PlayerTests(TestCase):
         self.assertEqual(attempt.submitted_at, stamp)
         self.assertContains(
             self.client.get(reverse("attempts:done", args=[attempt.pk])),
-            "Test submitted",
+            "Practice results",
         )
         self.assertEqual(self.save(attempt, 1, {"1": "x"}).status_code, 409)
         # stale double-click on "Finish section" must not skip a section
@@ -230,7 +230,7 @@ class PlayerTests(TestCase):
                         {"section_index": index},
                     )
                     attempt.refresh_from_db()
-            self.assertEqual(attempt.status, Attempt.Status.SUBMITTED)
+            self.assertEqual(attempt.status, Attempt.Status.SCORED)
 
     def test_blank_autosave_is_not_answered(self):
         attempt, _ = self.start(section="listening")

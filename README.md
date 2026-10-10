@@ -77,6 +77,14 @@ uv run ruff check .
 uv run ruff format --check .
 ```
 
+## Practice scoring (Phase 4)
+
+Submitting an attempt scores it straight away and opens the results page (`/attempts/<id>/submitted/`), with an answer review at `/attempts/<id>/review/`.
+
+- Weights, partial-credit schemes and IELTS band tables live in **Scoring → Scoring configs** (seeded by `seed_demo`; anything missing falls back to `scoring/defaults.py`).
+- Writing and Speaking use a stand-in practice marker (`scoring/engines.py`), to be replaced by a real AI marker.
+- Set `SCORING_INLINE=0` to leave attempts `submitted` and score them with `uv run python manage.py score_attempts` (`--failed` retries failures, `--attempt <id>` re-scores one). Admins can also re-score from the Attempts list.
+
 ## Mock player (Phase 3)
 
 Start a free mock (or "Practise this section" / "Practise all" on a question type). Answers autosave; each section has a server-side deadline.

@@ -16,7 +16,9 @@ class DashboardView(StudentRequiredMixin, TemplateView):
         exam = profile.primary_exam
         if exam is None or not exam.is_active:
             exam = Exam.objects.filter(code="IELTS_ACADEMIC", is_active=True).first()
-        attempts = self.request.user.attempts.select_related("exam", "pack")
+        attempts = self.request.user.attempts.select_related(
+            "exam", "pack", "score_breakdown"
+        )
         context.update(
             profile=profile,
             exam=exam,

@@ -6,7 +6,14 @@ from .models import Attempt, AttemptItem, FeedbackNote
 class AttemptItemInline(admin.TabularInline):
     model = AttemptItem
     extra = 0
-    fields = ["order", "question", "section_code", "score_status", "submitted_at"]
+    fields = [
+        "order",
+        "question",
+        "section_code",
+        "score_status",
+        "item_score",
+        "submitted_at",
+    ]
     readonly_fields = fields
     show_change_link = True
     can_delete = False
@@ -29,6 +36,18 @@ class AttemptAdmin(admin.ModelAdmin):
     readonly_fields = ["id", "created_at", "updated_at"]
     date_hierarchy = "created_at"
     inlines = [AttemptItemInline]
+    actions = ["rescore"]
+
+    @admin.action(description="Re-score selected attempts (practice scoring)")
+    def rescore(self, request, queryset):
+        from scoring.services import score_attempt
+
+        done = 0
+        for attempt in queryset.exclude(
+            status__in=[Attempt.Status.NOT_STARTED, Attempt.Status.IN_PROGRESS]
+        ):
+            done += score_attempt(attempt, force=True).status == Attempt.Status.SCORED
+        self.message_user(request, f"Re-scored {done} attempt(s).")
 
 
 @admin.register(AttemptItem)

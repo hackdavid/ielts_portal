@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Review | {{ attempt.exam.name }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-4xl space-y-4" data-testid="review">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h1 class="text-2xl font-bold">Answer review</h1>
+    <a href="{% url 'attempts:done' attempt.pk %}" class="text-sm font-semibold text-brand hover:underline">← Back to results</a>
+  </div>
+  {% include "components/disclaimer.html" %}
+  {% for it in items %}
+  <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" data-testid="review-item">
+    <header class="flex flex-wrap items-baseline justify-between gap-2">
+      <h2 class="font-bold">{{ it.order }}. {{ it.title }}</h2>
+      <p class="text-sm text-slate-500">{{ it.section }} · {{ it.qtype }} · {% if it.score.band is not None %}Band {{ it.score.band }}{% else %}{{ it.score.raw|floatformat:"-1" }} / {{ it.score.max_raw|floatformat:"-1" }}{% endif %}</p>
+    </header>
+    {% if it.details %}
+    <table class="mt-3 w-full text-left text-sm">
+      <thead class="text-xs uppercase text-slate-500"><tr><th class="py-1 pr-3">Question</th><th class="py-1 pr-3">Your answer</th><th class="py-1 pr-3">Correct answer</th><th class="py-1"></th></tr></thead>
+      <tbody>{% for d in it.details %}<tr class="border-t border-slate-100 align-top"><td class="py-1.5 pr-3">{{ d.label }}</td><td class="py-1.5 pr-3">{{ d.given }}</td><td class="py-1.5 pr-3 font-medium">{{ d.expected }}</td><td class="py-1.5">{% if d.correct %}<span class="text-emerald-600" aria-label="Correct">✓</span>{% else %}<span class="text-red-600" aria-label="Incorrect">✗</span>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table>
+    {% endif %}
+    {% if it.text is not None %}<details class="mt-3"><summary class="cursor-pointer text-sm font-semibold">Your answer ({{ it.score.words }} words)</summary><p class="mt-2 whitespace-pre-line text-sm text-slate-700">{{ it.text|default:"(empty)" }}</p></details>{% endif %}
+    {% if it.recording %}<audio class="mt-3 w-full" controls preload="none" src="{{ it.recording }}"></audio>{% endif %}
+    {% if it.traits %}<dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">{% for name, value in it.traits.items %}<div class="flex justify-between rounded-lg bg-slate-50 px-3 py-1.5"><dt>{{ name }}</dt><dd class="font-semibold">{{ value }}</dd></div>{% endfor %}</dl>{% endif %}
+    {% if it.flags %}<p class="mt-2 text-xs text-amber-700">{% for f in it.flags %}{% if f == "unanswered" %}Not answered{% elif f == "under_length" %}Under the word count{% elif f == "no_recording" %}No recording{% elif f == "empty" %}Empty answer{% elif f == "short_recording" %}Very short recording{% elif f == "form_out_of_range" %}Outside the word range{% else %}{{ f }}{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+    {% if it.transcript %}<details class="mt-3"><summary class="cursor-pointer text-sm font-semibold">Listening script</summary><p class="mt-2 text-sm text-slate-700">{{ it.transcript }}</p></details>{% endif %}
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

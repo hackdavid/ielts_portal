@@ -25,7 +25,7 @@
     </div>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" data-testid="recent-attempts">
       <h2 class="font-bold">Recent attempts</h2>
-      <ul class="mt-2 space-y-2 text-sm">{% for a in recent %}<li class="flex items-center justify-between gap-2"><span>{{ a.pack.title|default:a.exam.name }} · {{ a.get_mode_display }}{% if a.section_code %} · {{ a.get_section_code_display }}{% endif %}</span><a class="text-slate-500 hover:text-brand" href="{% url 'attempts:done' a.pk %}">{{ a.get_status_display }} · {{ a.submitted_at|date:"j M" }}</a></li>{% empty %}<li class="text-slate-500">No submitted attempts yet.</li>{% endfor %}</ul>
+      <ul class="mt-2 space-y-2 text-sm">{% for a in recent %}<li class="flex items-center justify-between gap-2"><span>{{ a.pack.title|default:a.exam.name }} · {{ a.get_mode_display }}{% if a.section_code %} · {{ a.get_section_code_display }}{% endif %}</span><a class="text-slate-500 hover:text-brand" href="{% url 'attempts:done' a.pk %}">{% with b=a.score_breakdown %}{% if a.status == "scored" and b.overall is not None %}<span class="font-semibold text-slate-800" data-testid="recent-score">{% if b.scale == "ielts_band" %}Band {{ b.overall|floatformat:1 }}{% else %}{{ b.overall|floatformat:0 }}/90{% endif %}</span>{% else %}{{ a.get_status_display }}{% endif %}{% endwith %} · {{ a.submitted_at|date:"j M" }}</a></li>{% empty %}<li class="text-slate-500">No submitted attempts yet.</li>{% endfor %}</ul>
     </div>
   </div>
   {% endif %}

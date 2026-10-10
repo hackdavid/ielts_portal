@@ -12,6 +12,8 @@ from django.views.generic import TemplateView
 
 from accounts.permissions import RoleRequiredMixin
 from catalog.models import Asset
+from scoring import presentation
+from scoring.models import ScoreBreakdown
 
 from . import services
 from .models import Attempt
@@ -119,8 +121,32 @@ class DoneView(AttemptMixin, TemplateView):
         answered = sum(
             1 for i in items if i.audio_id or services.has_answer(i.response)
         )
+        breakdown = None
+        if attempt.status == Attempt.Status.SCORED:
+            breakdown = ScoreBreakdown.objects.filter(attempt=attempt).first()
+        context = self.get_context_data(
+            attempt=attempt, total=len(items), answered=answered, breakdown=breakdown
+        )
+        if breakdown:
+            context.update(
+                overall=presentation.overall_text(breakdown),
+                section_rows=presentation.section_rows(breakdown),
+                trait_rows=presentation.trait_rows(breakdown),
+            )
+        return self.render_to_response(context)
+
+
+class ReviewView(AttemptMixin, TemplateView):
+    template_name = "attempts/review.html"
+
+    def get(self, request, *args, **kwargs):
+        attempt = self.get_attempt()
+        if attempt.status != Attempt.Status.SCORED:
+            return redirect("attempts:done", attempt.pk)
         return self.render_to_response(
-            self.get_context_data(attempt=attempt, total=len(items), answered=answered)
+            self.get_context_data(
+                attempt=attempt, items=presentation.review_items(attempt)
+            )
         )
 
 

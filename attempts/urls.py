@@ -12,6 +12,7 @@ urlpatterns = [
     path("attempts/<uuid:pk>/next-section/", views.next_section, name="next_section"),
     path("attempts/<uuid:pk>/submit/", views.submit, name="submit"),
     path("attempts/<uuid:pk>/submitted/", views.DoneView.as_view(), name="done"),
+    path("attempts/<uuid:pk>/review/", views.ReviewView.as_view(), name="review"),
     path(
         "attempts/<uuid:pk>/items/<int:order>/recording/",
         views.recording,
