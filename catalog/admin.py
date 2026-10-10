@@ -5,11 +5,37 @@ from .models import (
     Exam,
     MockPack,
     MockPackItem,
+    MockPackSection,
     Question,
     QuestionType,
+    SectionTiming,
     StudyAid,
     Tag,
 )
+
+
+class SectionTimingInline(admin.TabularInline):
+    model = SectionTiming
+    extra = 0
+    verbose_name_plural = "Section timings (real-exam defaults)"
+
+
+class MockPackSectionInline(admin.TabularInline):
+    model = MockPackSection
+    extra = 0
+    verbose_name_plural = "Section order / timing overrides (empty = exam default)"
+
+
+@admin.register(SectionTiming)
+class SectionTimingAdmin(admin.ModelAdmin):
+    list_display = ["exam", "section", "order", "duration_sec", "extra_sec"]
+    list_filter = ["exam"]
+
+
+@admin.register(MockPackSection)
+class MockPackSectionAdmin(admin.ModelAdmin):
+    list_display = ["pack", "section", "order", "duration_sec"]
+    list_filter = ["pack__exam"]
 
 
 class QuestionTypeInline(admin.TabularInline):
@@ -25,7 +51,7 @@ class ExamAdmin(admin.ModelAdmin):
     list_filter = ["kind", "is_active"]
     search_fields = ["name", "code"]
     prepopulated_fields = {"slug": ["name"]}
-    inlines = [QuestionTypeInline]
+    inlines = [SectionTimingInline, QuestionTypeInline]
 
 
 @admin.register(QuestionType)
@@ -94,7 +120,7 @@ class MockPackAdmin(admin.ModelAdmin):
     list_filter = ["exam", "mode_default", "is_free", "is_active"]
     search_fields = ["title", "slug"]
     prepopulated_fields = {"slug": ["title"]}
-    inlines = [MockPackItemInline]
+    inlines = [MockPackSectionInline, MockPackItemInline]
 
 
 @admin.register(StudyAid)

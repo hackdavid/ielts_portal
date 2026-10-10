@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from catalog.models import Exam, MockPack, Question, QuestionType
+from catalog.models import Exam, MockPack, MockPackSection, Question, QuestionType
 from plans.models import Entitlement
 from tenancy.models import Membership, Tenant
 
@@ -31,7 +31,7 @@ class SeedDemoTests(TestCase):
                 QuestionType.objects.count(),
             ),
         )
-        for code in ("PTE_ACADEMIC", "IELTS_ACADEMIC", "PTE_CORE", "IELTS_GENERAL"):
+        for code in ("PTE_ACADEMIC", "PTE_CORE"):
             exam = Exam.objects.get(code=code)
             with self.subTest(code):
                 self.assertTrue(exam.mock_packs.filter(is_free=True).exists())
@@ -171,3 +171,100 @@ class CatalogueViewTests(TestCase):
             ).status_code,
             501,
         )
+
+
+class IeltsSeedTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_demo", stdout=StringIO())
+
+    def test_ielts_mocks_follow_real_structure_and_timing(self):
+        for code in ("IELTS_ACADEMIC", "IELTS_GENERAL"):
+            exam = Exam.objects.get(code=code)
+            pack = exam.mock_packs.get(slug="mock-test-1", is_free=True)
+            with self.subTest(code):
+                self.assertFalse(
+                    Question.objects.filter(
+                        exam=exam, title__startswith="Demo "
+                    ).exists()
+                )
+                plan = pack.section_plan()
+                self.assertEqual(
+                    [(r["section"], r["duration_sec"]) for r in plan],
+                    [
+                        ("listening", 1800),
+                        ("reading", 3600),
+                        ("writing", 3600),
+                        ("speaking", 840),
+                    ],
+                )
+                totals = {}
+                for item in pack.items.select_related("question"):
+                    n = len(item.question.stem.get("items", [])) or 1
+                    totals[item.section_code] = totals.get(item.section_code, 0) + n
+                self.assertEqual(
+                    totals,
+                    {"listening": 40, "reading": 40, "writing": 2, "speaking": 3},
+                )
+                numbers = [
+                    i["n"]
+                    for item in pack.items.filter(section_code="reading").order_by(
+                        "order"
+                    )
+                    for i in item.question.stem["items"]
+                ]
+                self.assertEqual(numbers, list(range(1, 41)))
+                for qtype in exam.question_types.all():
+                    self.assertTrue(qtype.questions.exists(), qtype.code)
+                    self.assertTrue(qtype.default_time_sec)
+
+    def test_admin_timing_edits_survive_reseed_and_pack_override(self):
+        exam = Exam.objects.get(code="IELTS_ACADEMIC")
+        exam.section_timings.filter(section="reading").update(duration_sec=3000)
+        qtype = exam.question_types.get(code="TASK2")
+        qtype.default_time_sec = 2000
+        qtype.save()
+        call_command("seed_demo", stdout=StringIO())
+        pack = exam.mock_packs.get(slug="mock-test-1")
+        self.assertEqual(pack.section_plan()[1]["duration_sec"], 3000)
+        qtype.refresh_from_db()
+        self.assertEqual(qtype.default_time_sec, 2000)
+        MockPackSection.objects.create(
+            pack=pack, section="writing", order=0, duration_sec=1800
+        )
+        MockPackSection.objects.create(pack=pack, section="speaking", order=1)
+        self.assertEqual(
+            pack.section_plan(),
+            [
+                {
+                    "section": "writing",
+                    "duration_sec": 1800,
+                    "extra_sec": 0,
+                    "is_override": True,
+                },
+                {
+                    "section": "speaking",
+                    "duration_sec": 840,
+                    "extra_sec": 0,
+                    "is_override": False,
+                },
+            ],
+        )
+
+    def test_dashboard_shows_mocks_and_practice_without_answers(self):
+        user = User.objects.create(username="d", email="d@example.com")
+        user.profile.onboarded_at = timezone.now()
+        user.profile.save()
+        self.client.force_login(user)
+        response = self.client.get(reverse("analytics:dashboard"))
+        self.assertContains(response, "IELTS Academic Mock Test 1")
+        self.assertContains(response, "True / False / Not Given")
+        self.assertNotIn("tenfold", response.content.decode())
+        pack = Exam.objects.get(code="IELTS_ACADEMIC").mock_packs.get(
+            slug="mock-test-1"
+        )
+        detail = self.client.get(
+            reverse("catalog:mock_detail", args=[pack.pk])
+        ).content.decode()
+        self.assertIn("60 min", detail)
+        self.assertNotIn("Delgado", detail)

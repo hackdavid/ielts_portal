@@ -44,6 +44,32 @@ class Exam(TimeStampedModel):
         return self.name
 
 
+class SectionTiming(models.Model):
+    """Default (real-exam) timing per section; edit in admin under the Exam."""
+
+    exam = models.ForeignKey(
+        Exam, on_delete=models.CASCADE, related_name="section_timings"
+    )
+    section = models.CharField(max_length=10, choices=Section.choices)
+    order = models.PositiveSmallIntegerField(default=0)
+    duration_sec = models.PositiveIntegerField()
+    extra_sec = models.PositiveIntegerField(
+        default=0, help_text="Transfer / review time added after the section."
+    )
+    notes = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["exam", "order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["exam", "section"], name="uniq_sectiontiming_exam_section"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.exam.code}:{self.section} {self.duration_sec}s"
+
+
 class QuestionType(TimeStampedModel):
     class Engine(models.TextChoices):
         MCQ_SINGLE = "mcq_single", "MCQ single"
@@ -209,6 +235,52 @@ class MockPack(TimeStampedModel):
     def __str__(self):
         return self.title
 
+    def section_plan(self):
+        """Effective timing per section: pack override, else exam default."""
+        defaults = {t.section: t for t in self.exam.section_timings.all()}
+        overrides = list(self.sections.all())
+        if overrides:
+            pairs = [(s.section, s.duration_sec) for s in overrides]
+        else:
+            pairs = [(section, None) for section in defaults]
+        plan = []
+        for section, override in pairs:
+            default = defaults.get(section)
+            plan.append(
+                {
+                    "section": section,
+                    "duration_sec": override
+                    or (default.duration_sec if default else 0),
+                    "extra_sec": default.extra_sec if default else 0,
+                    "is_override": bool(override),
+                }
+            )
+        return plan
+
+
+class MockPackSection(models.Model):
+    """Optional per-mock section order/timing override."""
+
+    pack = models.ForeignKey(
+        MockPack, on_delete=models.CASCADE, related_name="sections"
+    )
+    section = models.CharField(max_length=10, choices=Section.choices)
+    order = models.PositiveSmallIntegerField(default=0)
+    duration_sec = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Empty = exam default timing."
+    )
+
+    class Meta:
+        ordering = ["pack", "order"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pack", "section"], name="uniq_mockpacksection_pack_section"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.pack} · {self.section}"
+
 
 class MockPackItem(models.Model):
     pack = models.ForeignKey(MockPack, on_delete=models.CASCADE, related_name="items")
@@ -217,6 +289,11 @@ class MockPackItem(models.Model):
     )
     order = models.PositiveIntegerField()
     section_code = models.CharField(max_length=10, choices=Section.choices)
+    part = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Listening part / reading passage / writing task / speaking part.",
+    )
     time_override_sec = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:

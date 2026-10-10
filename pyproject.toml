@@ -22,3 +22,4 @@ select = ["E", "F", "I", "UP", "DJ"]
 
 [tool.ruff.lint.per-file-ignores]
 "config/settings/*.py" = ["E501"]
+"catalog/ielts_content/*.py" = ["E501"]

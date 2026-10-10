@@ -51,7 +51,7 @@ The first run downloads the pinned standalone Tailwind CLI (no Node needed).
 
 ## Demo catalogue
 
-`uv run python manage.py seed_demo` creates placeholder question types, 3 questions per type and a free + a locked mock for each exam (safe to re-run). Browse at `/exams/` after signing in.
+`uv run python manage.py seed_demo` creates original IELTS-style content (Academic + General Training Mock Test 1, practice sets per question category, real-exam section timings; see `docs/exams/ielts.md`) and placeholder PTE content (safe to re-run; never overwrites timings edited in admin). Browse at `/exams/` after signing in.
 
 ## Sign-in (Google via Firebase)
 

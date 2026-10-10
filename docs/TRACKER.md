@@ -111,6 +111,10 @@ Update the checkboxes and the status table in the same PR that delivers the work
 - [x] Filters update list without 500s
 - [x] No copyrighted stems — placeholders only
 - [x] Answer keys never appear in HTML source of catalogue pages
+- [x] IELTS exam format doc (`docs/exams/ielts.md`): sections, question categories, official timings
+- [x] Real-exam section timings configurable in admin (`SectionTiming` per exam, `MockPackSection` per-mock override, `QuestionType.default_time_sec` for practice)
+- [x] Original IELTS-style content: Academic + General Training Mock Test 1 (40 listening / 40 reading / 2 writing / 3 speaking) + practice sets for every category
+- [x] Student dashboard lists mock tests (with section timings) and practice by section
 
 ## Phase 3 — Take mock with dummy responses
 

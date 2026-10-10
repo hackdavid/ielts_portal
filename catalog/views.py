@@ -24,6 +24,44 @@ def _chip(request, key, value, label):
     return {"label": label, "url": f"?{query}" if query else "?", "active": active}
 
 
+def practice_sections(exam, request):
+    """Question categories grouped by section (exam order) with visible counts."""
+    questions = visible(Question.objects.filter(exam=exam), request)
+    counts = dict(
+        questions.values("question_type")
+        .annotate(n=Count("id"))
+        .values_list("question_type", "n")
+    )
+    sections = []
+    for section in SECTION_ORDER.get(exam.kind, [c for c, _ in Section.choices]):
+        qtypes = list(exam.question_types.filter(section=section).order_by("pk"))
+        for qt in qtypes:
+            qt.question_count = counts.get(qt.pk, 0)
+        if qtypes:
+            sections.append(
+                {"code": section, "label": SECTION_LABELS[section], "qtypes": qtypes}
+            )
+    return sections
+
+
+def labelled_plan(pack):
+    item_counts = dict(
+        pack.items.values("section_code")
+        .annotate(n=Count("id"))
+        .values_list("section_code", "n")
+    )
+    plan = pack.section_plan()
+    for row in plan:
+        row["label"] = SECTION_LABELS.get(row["section"], row["section"])
+        row["sets"] = item_counts.get(row["section"], 0)
+    return plan
+
+
+def exam_packs(exam, request):
+    packs = visible(exam.mock_packs.annotate(item_count=Count("items")), request)
+    return mark_locked(request, packs.order_by("-is_free", "title"))
+
+
 class ExamMixin(RoleRequiredMixin):
     def get_exam(self):
         return get_object_or_404(Exam, slug=self.kwargs["slug"], is_active=True)
@@ -51,32 +89,10 @@ class ExamDetailView(ExamMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         exam = self.get_exam()
-        questions = visible(Question.objects.filter(exam=exam), self.request)
-        counts = dict(
-            questions.values_list("question_type")
-            .annotate(n=Count("id"))
-            .values_list("question_type", "n")
-        )
-        sections = []
-        for section in SECTION_ORDER.get(exam.kind, [c for c, _ in Section.choices]):
-            qtypes = [qt for qt in exam.question_types.filter(section=section)]
-            for qt in qtypes:
-                qt.question_count = counts.get(qt.pk, 0)
-            if qtypes:
-                sections.append(
-                    {
-                        "code": section,
-                        "label": SECTION_LABELS[section],
-                        "qtypes": qtypes,
-                    }
-                )
-        packs = visible(
-            exam.mock_packs.annotate(item_count=Count("items")), self.request
-        )
         context.update(
             exam=exam,
-            sections=sections,
-            packs=mark_locked(self.request, packs.order_by("-is_free", "title")),
+            sections=practice_sections(exam, self.request),
+            packs=exam_packs(exam, self.request),
             tab=self.request.GET.get("tab")
             if self.request.GET.get("tab") in ("mocks", "types", "sections")
             else "mocks",
@@ -152,13 +168,11 @@ class MockDetailView(RoleRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pack = _get_pack(self.request, self.kwargs["pk"])
-        sections = pack.structure or []
-        for section in sections:
-            section["label"] = SECTION_LABELS.get(
-                section.get("section"), section.get("section")
-            )
         context.update(
-            pack=pack, exam=pack.exam, sections=sections, item_count=pack.items.count()
+            pack=pack,
+            exam=pack.exam,
+            sections=labelled_plan(pack),
+            item_count=pack.items.count(),
         )
         return context
 

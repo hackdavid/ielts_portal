@@ -2,13 +2,23 @@
 
 from django.db import transaction
 
-from .models import Exam, MockPack, MockPackItem, Question, QuestionType, Section, Tag
+from .ielts_seed import seed_ielts
+from .models import (
+    Exam,
+    MockPack,
+    MockPackItem,
+    Question,
+    QuestionType,
+    Section,
+    SectionTiming,
+    Tag,
+)
 
 S, W, R, L = Section.SPEAKING, Section.WRITING, Section.READING, Section.LISTENING
 E = QuestionType.Engine
 
 SECTION_ORDER = {Exam.Kind.PTE: [S, W, R, L], Exam.Kind.IELTS: [L, R, W, S]}
-IELTS_SECTION_TIME = {L: 1800, R: 3600, W: 3600, S: 840}
+PTE_TIMINGS = [(S, 1800), (W, 1620), (R, 1800), (L, 2580)]
 
 PTE_TYPES = [
     ("RA", "Read Aloud", S, E.SPEAKING_AUDIO, 40),
@@ -36,26 +46,6 @@ PTE_CORE_SWAPS = {
     "RL": ("RTS", "Respond to a Situation", S, E.SPEAKING_AUDIO, 40),
     "WE": ("WEM", "Write Email", W, E.WRITING_TEXT, 540),
 }
-IELTS_TYPES = [
-    ("L_COMP", "Form / Note Completion", L, E.COMPLETION, None),
-    ("L_MCQ", "Multiple Choice (Listening)", L, E.MCQ_SINGLE, None),
-    ("L_MAP", "Map / Plan Labelling", L, E.MAP_LABEL, None),
-    ("L_MATCH", "Matching (Listening)", L, E.MATCHING, None),
-    ("R_TFNG", "True / False / Not Given", R, E.TFNG, None),
-    ("R_MCQ", "Multiple Choice (Reading)", R, E.MCQ_SINGLE, None),
-    ("R_MULTI", "Choose TWO Answers", R, E.MCQ_MULTI, None),
-    ("R_MATCH", "Matching Headings", R, E.MATCHING, None),
-    ("R_COMP", "Summary Completion", R, E.COMPLETION, None),
-    ("TASK1", "Writing Task 1", W, E.WRITING_TEXT, 1200),
-    ("TASK2", "Writing Task 2: Essay", W, E.WRITING_TEXT, 2400),
-    ("SP1", "Speaking Part 1: Interview", S, E.SPEAKING_AUDIO, 300),
-    ("SP2", "Speaking Part 2: Long Turn", S, E.SPEAKING_AUDIO, 180),
-    ("SP3", "Speaking Part 3: Discussion", S, E.SPEAKING_AUDIO, 300),
-]
-TASK1_NAMES = {
-    "IELTS_ACADEMIC": "Writing Task 1: Report",
-    "IELTS_GENERAL": "Writing Task 1: Letter",
-}
 TOPICS = [
     ("education", "Education"),
     ("environment", "Environment"),
@@ -65,11 +55,6 @@ QUESTIONS_PER_TYPE = 3
 
 
 def types_for(exam):
-    if exam.kind == Exam.Kind.IELTS:
-        return [
-            (c, TASK1_NAMES.get(exam.code, n) if c == "TASK1" else n, s, e, t)
-            for c, n, s, e, t in IELTS_TYPES
-        ]
     if exam.code == "PTE_CORE":
         return [PTE_CORE_SWAPS.get(row[0], row) for row in PTE_TYPES]
     return PTE_TYPES
@@ -185,7 +170,7 @@ def seed():
         slug="prediction", defaults={"label": "Prediction", "kind": Tag.Kind.PREDICTION}
     )
     counts = {"question_types": 0, "questions": 0, "mock_packs": 0}
-    for exam in Exam.objects.filter(kind__in=SECTION_ORDER):
+    for exam in Exam.objects.filter(kind=Exam.Kind.PTE):
         by_type = {}
         for code, name, section, engine, seconds in types_for(exam):
             qtype, _ = QuestionType.objects.update_or_create(
@@ -224,6 +209,17 @@ def seed():
         for number, is_free in ((1, True), (2, False)):
             _seed_pack(exam, by_type, number, is_free)
             counts["mock_packs"] += 1
+        for order, (section, seconds) in enumerate(PTE_TIMINGS):
+            SectionTiming.objects.get_or_create(
+                exam=exam,
+                section=section,
+                defaults={
+                    "order": order,
+                    "duration_sec": seconds,
+                    "notes": "Placeholder; verify.",
+                },
+            )
+    seed_ielts(counts)
     return counts
 
 
@@ -233,10 +229,7 @@ def _seed_pack(exam, by_type, number, is_free):
     structure, total = [], 0
     for section in order:
         section_types = [qt for qt in qtypes if qt.section == section]
-        if exam.kind == Exam.Kind.IELTS:
-            seconds = IELTS_SECTION_TIME[section]
-        else:
-            seconds = sum(qt.default_time_sec or 0 for qt in section_types)
+        seconds = sum(qt.default_time_sec or 0 for qt in section_types)
         structure.append(
             {"section": section, "items": len(section_types), "time_sec": seconds}
         )
