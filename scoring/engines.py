@@ -66,10 +66,10 @@ def _option_text(stem):
 def matches(given, expected, cfg, limit=None):
     if isinstance(given, list):
         given = " ".join(str(g) for g in given)
-    if limit and cfg.get("enforce_word_limit") and len(words(given)) > limit:
+    value = norm(given, cfg)
+    if limit and cfg.get("enforce_word_limit") and len(words(value)) > limit:
         return False
     options = expected if isinstance(expected, list) else [expected]
-    value = norm(given, cfg)
     return bool(value) and any(value == norm(o, cfg) for o in options)
 
 

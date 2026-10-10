@@ -46,6 +46,13 @@ class EngineTests(TestCase):
         stem = {"word_limit": 2}
         result = det(E.COMPLETION, key, {"1": "The Green.", "2": " Seven "}, stem)
         self.assertEqual(result["raw"], 2)
+        one_word = det(
+            E.COMPLETION,
+            {"answers": {"1": ["pottery"]}},
+            {"1": "the pottery"},
+            {"word_limit": 1},
+        )
+        self.assertEqual(one_word["raw"], 1)
         too_long = det(E.COMPLETION, key, {"1": "a dark green one"}, stem)
         self.assertEqual(too_long["raw"], 0)
         dropdown = det(E.FIB_DROPDOWN, {"blanks": {"1": "beta"}}, {"1": "Beta"})
