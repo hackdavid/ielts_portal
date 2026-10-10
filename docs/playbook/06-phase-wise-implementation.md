@@ -46,20 +46,23 @@ flowchart LR
 
 ## Phase 1 — Auth & profiles
 
-**Goals:** Register/login/logout; UserProfile; role redirect; onboarding.
+**Goals:** Google sign-in via Firebase (no passwords); logout; UserProfile; role redirect; onboarding. Design: [07-authentication-firebase.md](07-authentication-firebase.md).
 
 **Deliverables**
 
-- Auth views/templates  
+- Firebase Google login page + `static/js/firebase.js`  
+- `POST /api/auth/firebase/` token exchange (`firebase-admin` verify) → Django session; `/api/auth/logout/`, `/api/auth/me/`  
+- `User.firebase_uid`, `UserProfile.avatar_url` migration  
 - `UserProfile` model + admin  
 - Onboarding (primary exam, target)  
 - Permissions mixins `StudentRequired`, `InstituteAdminRequired`, `SuperAdminRequired`  
 
 **Acceptance**
 
-- [ ] New user registers → onboarding → dashboard  
+- [ ] First Google sign-in creates user → onboarding → dashboard  
+- [ ] Returning Google user lands on dashboard; existing/invited email is linked, not duplicated  
+- [ ] Invalid / non-Google / stale tokens → 401, no session  
 - [ ] Logout clears session  
-- [ ] Password reset path works (console email OK)  
 - [ ] Superuser flagged `role_primary=super_admin` reaches `/platform/` (can be stub page)  
 - [ ] Unauthorized access to `/org/` → 403  
 

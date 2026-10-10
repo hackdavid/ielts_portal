@@ -64,6 +64,16 @@ class Membership(Model):
 
 ---
 
+## User (custom, `accounts.User`)
+
+```text
+class User(AbstractUser):
+    firebase_uid: CharField(128) unique null  # Google identity via Firebase
+    # email unique case-insensitively; password unusable for Firebase users
+```
+
+---
+
 ## UserProfile
 
 ```text
@@ -77,6 +87,7 @@ class UserProfile(Model):
     timezone: CharField default "Asia/Kolkata"
     free_mocks_remaining: PositiveInt default 1
     onboarded_at: DateTime null
+    avatar_url: URLField blank  # from Google profile
     meta: JSONField default=dict
 ```
 

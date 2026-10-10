@@ -9,7 +9,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 |------:|------|--------|-------|
 | 0 | Skeleton | Done | Settings split, apps, Tailwind build, Alpine + Motion, `api.js`, health API |
 | — | Data models (05) | Done | All models from [05-data-models.md](playbook/05-data-models.md) + admin + initial migrations |
-| 1 | Auth & profiles | Not started | `accounts.User` (custom) + `UserProfile` already in place |
+| 1 | Auth & profiles (Google via Firebase) | Not started | Design in [07](playbook/07-authentication-firebase.md); `accounts.User` + `UserProfile` already in place |
 | 2 | Catalogue (dummy data) | Not started | Catalog models ready; needs `seed_demo` + screens |
 | 3 | Take mock (dummy) | Not started | `Attempt` / `AttemptItem` models ready |
 | 4 | Scoring stubs | Not started | `ScoreBreakdown` / `ScoringConfig` models ready |
@@ -32,6 +32,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | User model | `User` + `UserProfile` | `accounts.User(AbstractUser)` + `UserProfile` (auto-created by signal) | Swapping user model later is painful |
 | Tags | `ArrayField` | `catalog.Tag` M2M | SQLite has no `ArrayField` |
 | `Exam.slug` | not in 05 | added | Screens use `/exams/<slug>/` |
+| Auth | Email/password (django-allauth or built-in) | Google sign-in via Firebase → Django session; `/admin/` keeps password login | Product decision; see [07](playbook/07-authentication-firebase.md) |
 | Frontend API | — | `static/js/api.js` (`window.api`) | Single place for CSRF, auth headers, errors |
 
 ---
@@ -69,16 +70,22 @@ Update the checkboxes and the status table in the same PR that delivers the work
 
 ## Phase 1 — Auth & profiles
 
-- [ ] Auth views/templates (login, register, logout, password reset — console email)
+- [ ] Firebase project + Google provider enabled; web config + authorized domains
+- [ ] `firebase-admin` dep, `FIREBASE_*` settings, COOP `same-origin-allow-popups`
+- [ ] `User.firebase_uid`, `UserProfile.avatar_url` + migration
+- [ ] Login page (Continue with Google) + `static/js/firebase.js`; register → login redirect
+- [ ] `POST /api/auth/firebase/` exchange, `/api/auth/logout/`, `/api/auth/me/`
+- [ ] Role router (`/platform/`, `/org/`, `/onboarding/`, `/dashboard/` stubs)
 - [ ] Onboarding (primary exam, target)
 - [ ] Permission mixins `StudentRequired`, `InstituteAdminRequired`, `SuperAdminRequired`
 - [ ] `api.js` auth wiring (`api.onUnauthorized` → login redirect)
 
 **Acceptance**
 
-- [ ] New user registers → onboarding → dashboard
+- [ ] First Google sign-in creates user → onboarding → dashboard
+- [ ] Returning user → dashboard; invited/existing email linked, not duplicated
+- [ ] Invalid / non-Google / stale token → 401, no session
 - [ ] Logout clears session
-- [ ] Password reset path works (console email OK)
 - [ ] Superuser `role_primary=super_admin` reaches `/platform/` (stub)
 - [ ] Unauthorized access to `/org/` → 403
 

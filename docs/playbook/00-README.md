@@ -20,6 +20,7 @@ This pack is for founders and engineers shipping a multi-tenant exam-practice pr
 | 5 | [04-low-level-screens.md](./04-low-level-screens.md) | Frontend/Django eng | URL → view → template → UI/motion |
 | 6 | [05-data-models.md](./05-data-models.md) | Backend eng | Django model field sketches (dummy phase) |
 | 7 | [06-phase-wise-implementation.md](./06-phase-wise-implementation.md) | Delivery | Phased plan + acceptance criteria |
+| 8 | [07-authentication-firebase.md](./07-authentication-firebase.md) | Backend + frontend eng | Google sign-in via Firebase → Django session, account mapping, config |
 
 **Suggested reading paths**
 
@@ -37,7 +38,7 @@ This pack is for founders and engineers shipping a multi-tenant exam-practice pr
 | Backend | Django 5.x + Django Templates | No React/Vue SPA; HTMX optional later |
 | CSS | Tailwind CSS | CDN for Phase 0–1 MVP; django-tailwind / Vite build from Phase 2+ |
 | Motion | **Motion One** (`motion`) and/or **Alpine.js** + CSS | Framer Motion is React-only — do **not** pull React by default. Document React island only as a future escape hatch |
-| Auth | django-allauth or built-in + custom roles | Email/password first; SSO later for institutes |
+| Auth | **Firebase Authentication (Google sign-in only)** + Django session + custom roles | No passwords. See [07-authentication-firebase.md](07-authentication-firebase.md) |
 | DB | PostgreSQL | SQLite OK for local Phase 0 only |
 | Media | Local / S3-compatible | Speaking audio blobs, listening clips, images |
 | Async jobs | Celery + Redis (or Django-Q) | AI scoring, report generation |

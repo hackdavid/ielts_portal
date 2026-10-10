@@ -69,11 +69,11 @@ Conventions: URL name `app:view`, template under `templates/`, Motion One / Alpi
 
 ## 2–3. Login / Register
 
-- **Templates:** `templates/accounts/login.html`, `register.html`  
-- **UI:** Centre card form; OAuth placeholders hidden.  
+- **Templates:** `templates/accounts/login.html` (register redirects here)  
+- **UI:** Centre card with a single **Continue with Google** button (Firebase); error banner for blocked popup / failed verification.  
 - **Tailwind:** `min-h-screen flex items-center`; form `space-y-4`.  
 - **Motion:** Card scale-in.  
-- **Forms:** Django auth forms POST.  
+- **JS:** `static/js/firebase.js` → `signInWithPopup` → `api.post('/auth/firebase/', {id_token})` → redirect. No password forms.  
 
 ---
 
@@ -250,7 +250,7 @@ Conventions: URL name `app:view`, template under `templates/`, Motion One / Alpi
 ## 24. Profile
 
 - **Template:** `accounts/profile.html`  
-- **Form:** name, target, exam preference, password change.  
+- **Form:** name, target, exam preference (Google avatar/email read-only; no password fields).  
 
 ---
 

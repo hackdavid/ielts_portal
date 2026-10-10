@@ -4,6 +4,7 @@ PTE + IELTS practice portal — Django 5.2, Django Templates, Tailwind CSS, Alpi
 
 - Product & engineering playbook: [`docs/playbook/`](docs/playbook/00-README.md)
 - Phase-wise progress: [`docs/TRACKER.md`](docs/TRACKER.md)
+- Auth design (Google via Firebase): [`docs/playbook/07-authentication-firebase.md`](docs/playbook/07-authentication-firebase.md)
 
 ## Layout
 

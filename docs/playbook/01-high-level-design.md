@@ -252,7 +252,8 @@ All modes create an `Attempt` with `mode` enum and share scoring pipeline.
 - Signed URLs or auth-gated media for listening/speaking assets.  
 - No official-score claims in UI copy (“Practice score — approximate”).  
 - GDPR-ish: export/delete student data endpoints planned Phase 5+.  
-- CSRF on all forms; rate-limit login and AI score enqueue.
+- CSRF on all forms; rate-limit login and AI score enqueue.  
+- Auth: Google via Firebase; ID token verified server-side then exchanged for a Django session (see 07).
 
 ---
 

@@ -38,11 +38,11 @@ Every major practice-product feature at Gurully-parity depth for **PTE + IELTS**
 
 ## 1. Auth & profiles
 
-**What:** Email/password signup/login; role-aware home redirect.
+**What:** Google sign-in via Firebase (no passwords); role-aware home redirect. Design: [07-authentication-firebase.md](07-authentication-firebase.md).
 
 **User flow**
 
-1. Student registers → verify email (optional MVP) → onboarding: choose primary exam (PTE / IELTS).  
+1. Student clicks **Continue with Google** → first sign-in creates the account (Google email is already verified) → onboarding: choose primary exam (PTE / IELTS).  
 2. Login → role router → Student dashboard / Institute console / Admin.  
 3. Profile: name, target score/band, preferred exam, timezone (Asia/Kolkata default OK).
 
@@ -50,13 +50,13 @@ Every major practice-product feature at Gurully-parity depth for **PTE + IELTS**
 
 - `User` + `UserProfile` (role, tenant FK, target_score, onboarded_at).  
 - Permissions via role flags or django-guardian only if needed later.  
-- Session auth; optionally allauth.
+- Firebase ID token verified server-side once (`firebase-admin`), then Django session auth. `User.firebase_uid` links the Google identity.
 
 **Edge cases**
 
 - Institute-invited user already exists globally → attach membership, don’t duplicate User.  
 - Super Admin must not accidentally land on student player as default.  
-- Password reset tokens expire; rate-limit.
+- No passwords → no reset flow. Rate-limit the token-exchange endpoint; reject non-Google providers, unverified emails and stale tokens.
 
 ---
 
