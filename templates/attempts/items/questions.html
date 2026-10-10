@@ -1,0 +1,22 @@
+<ol class="space-y-3">
+  {% for q in item.questions %}
+  <li class="flex flex-col gap-2 rounded-lg border border-slate-100 p-3 sm:flex-row sm:items-start" data-testid="question">
+    {% if q.label %}<span class="w-8 shrink-0 font-bold text-slate-500">{{ q.label }}</span>{% endif %}
+    <div class="flex-1 space-y-2">
+      {% if q.text %}<p>{{ q.text }}</p>{% endif %}
+      {% if q.kind == "text" %}
+      <input type="text" name="{{ q.key }}" value="{{ q.value }}" autocomplete="off" class="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-1.5" aria-label="Answer {{ q.label }}">
+      {% if q.word_limit %}<span class="ml-2 text-xs text-slate-500">max {{ q.word_limit }} word{{ q.word_limit|pluralize }}</span>{% endif %}
+      {% elif q.kind == "select" %}
+      <select name="{{ q.key }}" class="rounded-lg border border-slate-300 px-3 py-1.5" aria-label="Answer {{ q.label }}">
+        <option value="">—</option>{% for o in q.options %}<option value="{{ o.value }}"{% if o.checked %} selected{% endif %}>{{ o.label }}</option>{% endfor %}
+      </select>
+      {% else %}
+      <div class="flex flex-col gap-1">{% for o in q.options %}
+        <label class="flex items-center gap-2"><input type="{{ q.kind }}" name="{{ q.key }}" value="{{ o.value }}"{% if o.checked %} checked{% endif %}{% if q.kind == "checkbox" %} data-multi{% endif %}> {{ o.label }}</label>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>

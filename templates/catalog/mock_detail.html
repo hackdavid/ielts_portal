@@ -11,8 +11,8 @@
     <p class="text-slate-600">{{ item_count }} question sets · about {% widthratio total_sec 60 1 %} minutes · {{ pack.get_mode_default_display }}</p>
     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <table class="w-full text-left text-sm">
-        <thead class="bg-slate-50 text-slate-500"><tr><th class="px-5 py-2">Section</th><th class="px-5 py-2">Question sets</th><th class="px-5 py-2">Time</th></tr></thead>
-        <tbody>{% for s in sections %}<tr class="border-t border-slate-100"><td class="px-5 py-2">{{ s.label }}</td><td class="px-5 py-2">{{ s.sets }}</td><td class="px-5 py-2">{% widthratio s.duration_sec 60 1 %} min{% if s.extra_sec %} + {% widthratio s.extra_sec 60 1 %} min review{% endif %}{% if s.is_override %} <span class="text-xs text-amber-700">(custom)</span>{% endif %}</td></tr>{% endfor %}</tbody>
+        <thead class="bg-slate-50 text-slate-500"><tr><th class="px-5 py-2">Section</th><th class="px-5 py-2">Question sets</th><th class="px-5 py-2">Time</th><th class="px-5 py-2"></th></tr></thead>
+        <tbody>{% for s in sections %}<tr class="border-t border-slate-100"><td class="px-5 py-2">{{ s.label }}</td><td class="px-5 py-2">{{ s.sets }}</td><td class="px-5 py-2">{% widthratio s.duration_sec 60 1 %} min{% if s.extra_sec %} + {% widthratio s.extra_sec 60 1 %} min review{% endif %}{% if s.is_override %} <span class="text-xs text-amber-700">(custom)</span>{% endif %}</td><td class="px-5 py-2 text-right">{% if not pack.locked and s.sets %}<form method="post" action="{% url 'catalog:mock_start' pack.pk %}">{% csrf_token %}<input type="hidden" name="section" value="{{ s.section }}"><button class="text-xs font-semibold text-brand hover:underline" data-testid="practise-section">Practise this section</button></form>{% endif %}</td></tr>{% endfor %}</tbody>
       </table>
     </div>
   </div>

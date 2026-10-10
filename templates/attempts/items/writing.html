@@ -1,0 +1,9 @@
+<div x-data="{ words: 0, count(el) { this.words = (el.value.trim().match(/\S+/g) || []).length } }" x-init="count($refs.text)" class="space-y-3">
+  {% if item.prompt %}<p class="whitespace-pre-line rounded-xl bg-slate-50 p-4">{{ item.prompt }}</p>{% endif %}
+  {% if item.data_table %}
+  <table class="text-sm"><thead><tr>{% for c in item.data_table.columns %}<th class="border border-slate-300 px-3 py-1 text-left">{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in item.data_table.rows %}<tr>{% for cell in row %}<td class="border border-slate-300 px-3 py-1">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
+  {% endif %}
+  <textarea name="text" x-ref="text" @input="count($el)" rows="14" class="w-full rounded-xl border border-slate-300 p-3" spellcheck="false" aria-label="Your answer">{{ item.text }}</textarea>
+  <p class="text-sm" data-testid="word-count"><span x-text="words"></span> words{% if item.min_words %} · write at least {{ item.min_words }}{% endif %}</p>
+</div>

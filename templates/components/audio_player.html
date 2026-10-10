@@ -1,0 +1,6 @@
+<div x-data="listening({ attempt: '{{ attempt.pk }}', order: {{ item.order }}, src: '{{ item.audio }}', maxPlays: {{ listening.max_plays|default:0 }}, allowSeek: {{ listening.allow_seek|yesno:'true,false' }} })"
+     class="flex flex-wrap items-center gap-3 rounded-xl bg-slate-100 p-3" data-testid="audio-player">
+  <audio x-ref="audio" preload="auto" :controls="allowSeek" @ended="playing = false" class="w-full max-w-md" x-show="allowSeek"></audio>
+  <button type="button" x-show="!allowSeek" class="rounded-lg bg-brand px-4 py-2 font-semibold text-brand-fg disabled:opacity-50" :disabled="playing || exhausted" @click="play()" data-testid="play-audio" x-text="playing ? 'Playing…' : exhausted ? 'No plays left' : 'Play recording'"></button>
+  <span class="text-xs text-slate-600" x-text="note"></span>
+</div>

@@ -86,6 +86,14 @@ class AttemptItem(TimeStampedModel):
     submitted_at = models.DateTimeField(null=True, blank=True)
     response = models.JSONField(null=True, blank=True)
     response_flags = models.JSONField(default=dict, blank=True)
+    audio = models.ForeignKey(
+        "catalog.Asset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attempt_items",
+        help_text="Student's speaking recording.",
+    )
     score_status = models.CharField(
         max_length=10, choices=ScoreStatus.choices, default=ScoreStatus.PENDING
     )

@@ -181,6 +181,14 @@ class Question(TimeStampedModel):
     )
     scorer_meta = models.JSONField(default=dict, blank=True)
     assets = models.ManyToManyField(Asset, blank=True, related_name="questions")
+    audio = models.ForeignKey(
+        Asset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="listening_questions",
+        help_text="Listening recording played in the attempt player.",
+    )
     is_active = models.BooleanField(default=True)
     version = models.PositiveIntegerField(default=1)
 

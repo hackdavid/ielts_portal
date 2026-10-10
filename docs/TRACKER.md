@@ -119,21 +119,24 @@ Update the checkboxes and the status table in the same PR that delivers the work
 ## Phase 3 — Take mock with dummy responses
 
 - [x] `Attempt`, `AttemptItem` models
-- [ ] Snapshotting pack items into `AttemptItem` on start
-- [ ] Player shell + item partials (MCQ, FIB text/dropdown, reorder, writing, speaking, listening)
-- [ ] Timers with server deadline
-- [ ] Autosave + audio upload endpoints (via `api.js`)
-- [ ] Mic check page
-- [ ] Submit → `SUBMITTED`
+- [x] Snapshotting pack items into `AttemptItem` on start
+- [x] Player shell + item partials (MCQ, FIB text/dropdown, reorder, writing, speaking, listening)
+- [x] Timers with server deadline
+- [x] Autosave + audio upload endpoints (via `api.js`)
+- [x] Mic check page
+- [x] Submit → `SUBMITTED`
+- [x] Section timers: one server deadline per section (`SectionTiming` / `MockPackSection`), auto-advance on expiry, no return to closed sections; late saves (> deadline + 5 s) rejected
+- [x] Listening audio via `Question.audio`; `manage.py listening_audio` makes espeak-ng demo audio (replace with real recordings)
+- [x] Dashboard: Continue (in-progress) + Recent attempts
 
 **Acceptance**
 
-- [ ] Full mock completable with dummy pack end-to-end
-- [ ] Refresh mid-attempt restores responses + timer within 2s skew
-- [ ] Speaking upload stores playable file
-- [ ] Listening play_count increments; seek hidden when configured
-- [ ] Double finalize is idempotent
-- [ ] Section-wise & question-wise modes create attempts with correct `mode`
+- [x] Full mock completable with dummy pack end-to-end
+- [x] Refresh mid-attempt restores responses + timer within 2s skew
+- [x] Speaking upload stores playable file
+- [x] Listening play_count increments; seek hidden when configured
+- [x] Double finalize is idempotent
+- [x] Section-wise & question-wise modes create attempts with correct `mode`
 
 ## Phase 4 — Scoring stubs
 

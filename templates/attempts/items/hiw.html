@@ -1,0 +1,2 @@
+<p class="leading-9">{% for w in item.words %}<label class="cursor-pointer"><input type="checkbox" name="selected" value="{{ w.i }}" class="peer sr-only" data-multi{% if w.checked %} checked{% endif %}><span class="rounded px-0.5 peer-checked:bg-amber-200">{{ w.w }}</span></label> {% endfor %}</p>
+<p class="text-xs text-slate-500">Click the words that differ from the recording.</p>

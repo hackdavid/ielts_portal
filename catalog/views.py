@@ -1,8 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Count
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 
 from accounts.permissions import RoleRequiredMixin
 
@@ -185,11 +186,37 @@ class MockDetailView(RoleRequiredMixin, TemplateView):
 
 
 @method_decorator(require_POST, name="dispatch")
-class StartMockView(RoleRequiredMixin, TemplateView):
-    template_name = "catalog/start_pending.html"
-
+class StartMockView(RoleRequiredMixin, View):
     def post(self, request, *args, **kwargs):
+        from attempts.services import start_pack
+
         pack = _get_pack(request, kwargs["pk"])
         if pack.locked:
             return redirect("plans:locked")
-        return render(request, self.template_name, {"pack": pack}, status=501)
+        section = request.POST.get("section") or None
+        if section and section not in Section.values:
+            section = None
+        attempt = start_pack(request, pack, section)
+        if attempt is None:
+            return redirect("catalog:mock_detail", pack.pk)
+        return redirect("attempts:play", attempt.pk)
+
+
+@method_decorator(require_POST, name="dispatch")
+class PracticeStartView(ExamMixin, View):
+    def post(self, request, *args, **kwargs):
+        from attempts.services import questions_for, start_questions
+
+        exam = self.get_exam()
+        qtype = get_object_or_404(exam.question_types, code=self.kwargs["code"])
+        question_id = request.POST.get("question") or None
+        try:
+            questions = questions_for(
+                qtype, visible(Question.objects.all(), request), question_id
+            )
+            attempt = start_questions(request, qtype, questions)
+        except ValidationError:
+            attempt = None
+        if attempt is None:
+            return redirect("catalog:qtype_list", exam.slug, qtype.code)
+        return redirect("attempts:play", attempt.pk)

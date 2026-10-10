@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Submitted | {{ attempt.exam.name }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm" data-animate data-testid="submitted">
+  <p class="text-4xl">✓</p>
+  <h1 class="mt-2 text-2xl font-bold">Test submitted</h1>
+  <p class="mt-2 text-slate-600">{{ attempt.pack.title|default:attempt.exam.name }} · {{ attempt.get_mode_display }}</p>
+  <p class="mt-1 text-sm text-slate-500">Answered {{ answered }} of {{ total }} question sets · submitted {{ attempt.submitted_at|date:"j M Y, H:i" }}</p>
+  <p class="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Scoring arrives in the next phase. {{ PRACTICE_SCORE_DISCLAIMER }}</p>
+  <a href="{% url 'analytics:dashboard' %}" class="mt-6 inline-block rounded-lg bg-brand px-4 py-2 font-semibold text-brand-fg">Back to dashboard</a>
+</section>
+{% endblock %}

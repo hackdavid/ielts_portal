@@ -76,3 +76,8 @@ uv run python manage.py makemigrations --check --dry-run
 uv run ruff check .
 uv run ruff format --check .
 ```
+
+## Mock player (Phase 3)
+
+Start a free mock (or "Practise this section" / "Practise all" on a question type). Answers autosave; each section has a server-side deadline.
+Optional demo listening audio: `sudo apt install espeak-ng && uv run python manage.py listening_audio` (upload real recordings via `Question.audio` in admin).

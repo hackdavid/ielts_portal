@@ -131,7 +131,7 @@ class CatalogueViewTests(TestCase):
         locked = self.client.post(reverse("catalog:mock_start", args=[self.paid.pk]))
         self.assertRedirects(locked, reverse("plans:locked"))
         free = self.client.post(reverse("catalog:mock_start", args=[self.free.pk]))
-        self.assertEqual(free.status_code, 501)
+        self.assertIn("/attempts/", free["Location"])
         self.assertEqual(
             self.client.get(
                 reverse("catalog:mock_start", args=[self.free.pk])
@@ -145,7 +145,7 @@ class CatalogueViewTests(TestCase):
             self.client.post(
                 reverse("catalog:mock_start", args=[self.paid.pk])
             ).status_code,
-            501,
+            302,
         )
         Entitlement.objects.all().update(
             expires_at=timezone.now() - timezone.timedelta(days=1)
@@ -169,7 +169,7 @@ class CatalogueViewTests(TestCase):
             self.client.post(
                 reverse("catalog:mock_start", args=[self.paid.pk])
             ).status_code,
-            501,
+            302,
         )
 
 

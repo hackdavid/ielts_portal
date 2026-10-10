@@ -104,7 +104,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "difficulty",
     ]
     search_fields = ["title"]
-    autocomplete_fields = ["question_type", "tenant", "tags", "assets"]
+    autocomplete_fields = ["question_type", "tenant", "tags", "assets", "audio"]
     readonly_fields = ["id", "created_at", "updated_at"]
 
 

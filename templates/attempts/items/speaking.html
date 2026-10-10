@@ -1,0 +1,21 @@
+<div class="space-y-3">
+  {% if item.prompt %}<p class="rounded-xl bg-slate-50 p-4">{{ item.prompt }}</p>{% endif %}
+  {% if item.cue_card %}
+  <div class="rounded-xl border-2 border-dashed border-slate-300 p-4">
+    <p class="font-semibold">{{ item.cue_card.topic }}</p><p class="mt-2 text-sm">You should say:</p>
+    <ul class="ml-5 list-disc text-sm">{% for p in item.cue_card.points %}<li>{{ p }}</li>{% endfor %}</ul>
+    {% if item.cue_card.explain %}<p class="mt-1 text-sm">{{ item.cue_card.explain }}</p>{% endif %}
+  </div>
+  {% endif %}
+  {% if item.questions_list %}<ol class="ml-5 list-decimal space-y-1">{% for q in item.questions_list %}<li>{{ q }}</li>{% endfor %}</ol>{% endif %}
+  <div x-data="recorder({ attempt: '{{ attempt.pk }}', order: {{ item.order }}, prep: {{ item.prep_sec }}, max: {{ item.record_sec }}, existing: {{ item.has_recording|yesno:'true,false' }}, url: '{% url 'attempts:recording' attempt.pk item.order %}' })"
+       class="rounded-xl bg-slate-50 p-4" data-testid="recorder">
+    <p class="text-sm font-semibold" x-text="label" data-testid="recorder-state"></p>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button type="button" class="rounded-lg bg-brand px-4 py-2 font-semibold text-brand-fg" x-show="state === 'idle' || state === 'ready' || state === 'error'" @click="start()" x-text="state === 'idle' ? 'Start recording' : 'Re-record'" data-testid="record"></button>
+      <button type="button" class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white" x-show="state === 'recording'" @click="stop()" data-testid="stop">Stop</button>
+      <span class="font-mono" x-show="state === 'preparing' || state === 'recording'" x-text="countdown + 's'"></span>
+    </div>
+    <audio x-show="playback" :src="playback" controls class="mt-3 w-full" data-testid="playback"></audio>
+  </div>
+</div>
