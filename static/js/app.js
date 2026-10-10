@@ -1,21 +1,48 @@
-/* Global UI helpers: Motion One enter animations for [data-animate] elements. */
+/* Global UI helpers: Motion One reveal for [data-animate] elements as they scroll into view. */
 (function () {
   "use strict";
 
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   function animateIn(root) {
-    if (!window.Motion) return;
-    const { animate, stagger } = window.Motion;
-    const targets = (root || document).querySelectorAll("[data-animate]");
+    const targets = Array.from((root || document).querySelectorAll("[data-animate]:not(.is-in)"));
     if (!targets.length) return;
-    animate(
-      targets,
-      { opacity: [0, 1], transform: ["translateY(12px)", "translateY(0)"] },
-      { duration: 0.5, delay: stagger(0.04), ease: "easeOut" },
-    );
+    if (reduce || !("IntersectionObserver" in window)) {
+      targets.forEach((el) => el.classList.add("is-in"));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        el.style.transitionDelay = (el.dataset.delay || 0) + "s";
+        el.classList.add("is-in");
+        io.unobserve(el);
+      });
+    }, { rootMargin: "0px 0px -6% 0px" });
+    targets.forEach((el) => io.observe(el));
   }
 
-  window.ui = { animateIn };
-  document.addEventListener("DOMContentLoaded", () => animateIn());
+  function countUp(root) {
+    (root || document).querySelectorAll("[data-count]").forEach((el) => {
+      const end = parseFloat(el.dataset.count);
+      if (Number.isNaN(end) || reduce || !window.Motion) return;
+      const decimals = (el.dataset.count.split(".")[1] || "").length;
+      window.Motion.inView(el, () => {
+        window.Motion.animate(0, end, {
+          duration: 1.1,
+          ease: [0.22, 1, 0.36, 1],
+          onUpdate: (v) => (el.textContent = v.toFixed(decimals)),
+        });
+      });
+    });
+  }
+
+  window.ui = { animateIn, countUp };
+  document.addEventListener("DOMContentLoaded", () => {
+    animateIn();
+    countUp();
+  });
 })();
 
 // Session expired / not signed in → send the user to login, then back here.

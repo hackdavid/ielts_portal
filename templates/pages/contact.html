@@ -2,9 +2,38 @@
 
 {% block title %}Contact | IELTS Portal{% endblock %}
 
-{% block content %}
-<div data-animate class="max-w-2xl">
-  <h1 class="text-3xl font-bold">Contact</h1>
-  <p class="mt-4 text-slate-600">Get in touch with the IELTS Portal team.</p>
-</div>
+{% block main %}
+<main id="main" class="flex-1">
+  {% include "pages/_page_hero.html" with eyebrow="Contact" title="Talk to us." lead="Get in touch with the IELTS Portal team, whether you're a student with a question or an institute looking for a demo." %}
+
+  <section class="mx-auto grid max-w-6xl gap-8 px-4 py-24 sm:px-6 lg:grid-cols-[1fr_1.2fr]">
+    <div class="space-y-4">
+      <a data-animate href="mailto:{{ CONTACT_EMAIL }}?subject=Student%20question" class="card card-hover flex gap-4 p-6">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="book" %}</span>
+        <span><span class="block font-bold text-ink">Students</span><span class="mt-1 block text-sm text-slate-600">Questions about practice, scores or your account.</span></span>
+      </a>
+      <a data-animate href="mailto:{{ CONTACT_EMAIL }}?subject=Institute%20demo" class="card card-hover flex gap-4 p-6">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="building" %}</span>
+        <span><span class="block font-bold text-ink">Institutes</span><span class="mt-1 block text-sm text-slate-600">Book a demo or set up your organisation.</span></span>
+      </a>
+      <div data-animate class="card flex gap-4 p-6">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="mail" %}</span>
+        <span><span class="block font-bold text-ink">Email</span><a class="mt-1 block text-sm font-semibold text-brand hover:underline" href="mailto:{{ CONTACT_EMAIL }}">{{ CONTACT_EMAIL }}</a></span>
+      </div>
+    </div>
+
+    <form data-animate class="card space-y-5 p-8" x-data="{ name: '', topic: 'Student question', body: '' }"
+          @submit.prevent="location.href = 'mailto:{{ CONTACT_EMAIL }}?subject=' + encodeURIComponent(topic + (name ? ' from ' + name : '')) + '&body=' + encodeURIComponent(body)">
+      <div>
+        <h2 class="text-2xl font-extrabold text-ink">Send a message</h2>
+        <p class="mt-1 text-sm text-slate-500">This opens your email app with the message ready to send.</p>
+      </div>
+      <label class="block"><span class="text-sm font-semibold text-slate-700">Your name</span><input class="field mt-1.5" type="text" x-model="name" autocomplete="name"></label>
+      <label class="block"><span class="text-sm font-semibold text-slate-700">Topic</span>
+        <select class="field mt-1.5" x-model="topic"><option>Student question</option><option>Institute demo</option><option>Something else</option></select></label>
+      <label class="block"><span class="text-sm font-semibold text-slate-700">Message</span><textarea class="field mt-1.5 min-h-36" x-model="body" required></textarea></label>
+      <button type="submit" class="btn-primary w-full">Compose email {% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</button>
+    </form>
+  </section>
+</main>
 {% endblock %}

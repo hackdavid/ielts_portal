@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}For institutes | IELTS Portal{% endblock %}
+
+{% block main %}
+<main id="main" class="flex-1">
+  {% include "pages/_page_hero.html" with eyebrow="For institutes & teachers" title='Every student on <span class="font-serif font-normal italic text-gradient">their own path</span>.' lead="Give your students adaptive PTE and IELTS practice, and see every attempt, score and weak skill from one org dashboard." %}
+
+  <section class="mx-auto max-w-6xl px-4 pt-24 sm:px-6">
+    <div data-animate class="max-w-2xl"><p class="eyebrow">How it works</p><h2 class="mt-3 text-3xl font-extrabold text-ink sm:text-4xl">Up and running in minutes.</h2></div>
+    <ol class="mt-12 grid gap-5 md:grid-cols-3">
+      <li data-animate class="card p-7"><span class="font-display text-sm font-bold text-brand">01</span><h3 class="mt-3 text-lg font-bold text-ink">We set up your org</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Your institute gets its own private space, with your name and brand colour.</p></li>
+      <li data-animate class="card p-7"><span class="font-display text-sm font-bold text-brand">02</span><h3 class="mt-3 text-lg font-bold text-ink">Add student emails</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Students sign in with Google using that email and join your org automatically. No passwords to manage.</p></li>
+      <li data-animate class="card p-7"><span class="font-display text-sm font-bold text-brand">03</span><h3 class="mt-3 text-lg font-bold text-ink">Follow their progress</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">See attempts, scores by section and who needs help, student by student.</p></li>
+    </ol>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 pt-24 sm:px-6">
+    <div class="grid gap-5 md:grid-cols-2">
+      <div data-animate class="card p-8">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-ink text-white">{% include "components/icon.html" with name="chart" %}</span>
+        <h3 class="mt-5 text-xl font-bold text-ink">One view of your whole class</h3>
+        <p class="mt-2 text-slate-600">Active students, attempts this week, average scores and recent results in one dashboard.</p>
+      </div>
+      <div data-animate class="card p-8">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-ink text-white">{% include "components/icon.html" with name="target" %}</span>
+        <h3 class="mt-5 text-xl font-bold text-ink">Spot who needs help</h3>
+        <p class="mt-2 text-slate-600">Open any student to see their history and the section dragging their score down.</p>
+      </div>
+      <div data-animate class="card p-8">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-ink text-white">{% include "components/icon.html" with name="users" %}</span>
+        <h3 class="mt-5 text-xl font-bold text-ink">Seats and access</h3>
+        <p class="mt-2 text-slate-600">Grant teachers org access and students student access, each by email, and see who hasn't signed in yet.</p>
+      </div>
+      <div data-animate class="card p-8">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-ink text-white">{% include "components/icon.html" with name="shield" %}</span>
+        <h3 class="mt-5 text-xl font-bold text-ink">Private to your org</h3>
+        <p class="mt-2 text-slate-600">Students see only their own results; your org sees only its own students.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+    <div data-animate class="relative isolate overflow-hidden rounded-[2rem] bg-ink p-10 text-white sm:p-14">
+      <div class="pointer-events-none absolute inset-0 -z-10 bg-aurora opacity-80"></div>
+      <div class="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+        <div><h2 class="text-3xl font-extrabold">Bring adaptive practice to your students.</h2><p class="mt-2 text-slate-300">Tell us about your institute and we'll set you up.</p></div>
+        <a href="{% url 'pages:contact' %}" class="btn-light btn-lg shrink-0">Book a demo {% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</a>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

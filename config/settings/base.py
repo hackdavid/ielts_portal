@@ -157,6 +157,8 @@ FIREBASE_LOGIN_RATE_LIMIT_PER_MINUTE = 10
 # `manage.py score_attempts` instead.
 SCORING_INLINE = os.environ.get("SCORING_INLINE", "1") == "1"
 
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "hello@ieltsportal.app")
+
 PRACTICE_SCORE_DISCLAIMER = (
     "Practice scores are approximations — not official Pearson/IELTS results."
 )
