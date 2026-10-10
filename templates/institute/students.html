@@ -1,0 +1,16 @@
+{% extends "app/base.html" %}
+{% block title %}Students | {{ tenant.name }}{% endblock %}
+{% block crumbs %}{{ tenant.name }} · Students{% endblock %}
+{% block content %}
+<div data-animate class="mb-8 flex flex-wrap items-end justify-between gap-4">
+  <div><p class="eyebrow">{{ tenant.name }}</p><h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">Students</h1></div>
+  <form method="get" class="relative w-full sm:w-72" role="search">
+    <span class="pointer-events-none absolute inset-y-0 left-3 grid place-items-center text-slate-400">{% include "components/icon.html" with name="eye" cls="h-4 w-4" %}</span>
+    <input type="search" name="q" value="{{ query }}" placeholder="Search name or email" class="field pl-9" aria-label="Search students">
+  </form>
+</div>
+<div data-animate class="card overflow-hidden divide-y divide-slate-100" data-testid="students-list">
+  {% for m in students %}{% include "institute/_student_row.html" %}
+  {% empty %}<p class="px-5 py-12 text-center text-sm text-slate-500">{% if query %}No students match "{{ query }}".{% else %}No students yet. Invited students appear here after their first sign-in.{% endif %}</p>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "app/base.html" %}
+{% block title %}Results | IELTS Portal{% endblock %}
+{% block crumbs %}Results{% endblock %}
+{% block content %}
+{% include "app/_page_head.html" with eyebrow="Your history" title="Results" lead="Every attempt you've taken, newest first. Scores are practice estimates." %}
+<div data-animate class="card overflow-hidden" data-testid="results-list">
+  <ul class="divide-y divide-slate-100">
+    {% for a in attempts %}
+    <li><a class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50" href="{% if a.status == 'in_progress' %}{% url 'attempts:play' a.pk %}{% else %}{% url 'attempts:done' a.pk %}{% endif %}">
+      <span class="hidden h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand sm:grid">{% if a.mode == "full_mock" %}{% include "components/icon.html" with name="layers" %}{% elif a.section_code %}{% include "app/_section_icon.html" with code=a.section_code %}{% else %}{% include "components/icon.html" with name="target" %}{% endif %}</span>
+      <div class="min-w-0 flex-1"><p class="truncate font-medium text-ink">{{ a.pack.title|default:a.exam.name }}</p><p class="text-xs text-slate-500">{{ a.exam.name }} · {{ a.get_mode_display }}{% if a.section_code %} · {{ a.get_section_code_display }}{% endif %} · {{ a.submitted_at|default:a.started_at|date:"j M Y" }}</p></div>
+      {% if a.status == "in_progress" %}<span class="chip-brand">Resume</span>{% else %}{% include "app/_score.html" %}{% endif %}
+    </a></li>
+    {% empty %}
+    <li class="px-5 py-12 text-center"><p class="font-semibold text-ink">No attempts yet</p><p class="mt-1 text-sm text-slate-500">Your results will collect here.</p><a class="btn-primary mt-4" href="{% url 'analytics:dashboard' %}">Go to dashboard</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% if is_paginated %}
+<nav class="mt-6 flex items-center justify-between text-sm" aria-label="Pages">
+  {% if page_obj.has_previous %}<a class="btn-ghost" href="?page={{ page_obj.previous_page_number }}">Newer</a>{% else %}<span></span>{% endif %}
+  <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a class="btn-ghost" href="?page={{ page_obj.next_page_number }}">Older</a>{% else %}<span></span>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

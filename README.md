@@ -89,3 +89,5 @@ Submitting an attempt scores it straight away and opens the results page (`/atte
 
 Start a free mock (or "Practise this section" / "Practise all" on a question type). Answers autosave; each section has a server-side deadline.
 Optional demo listening audio: `sudo apt install espeak-ng && uv run python manage.py listening_audio` (upload real recordings via `Question.audio` in admin).
+
+Design system, layouts and the adaptive "next step" seam: [docs/design.md](docs/design.md).

@@ -1,0 +1,29 @@
+{% extends "app/base.html" %}
+{% block title %}Access & invites | {{ tenant.name }}{% endblock %}
+{% block crumbs %}{{ tenant.name }} · Access &amp; invites{% endblock %}
+{% block content %}
+{% include "app/_page_head.html" with eyebrow=tenant.name title="Access & invites" lead="Who can sign in to your institute. People join automatically the first time they sign in with Google using an invited email." %}
+<div class="grid gap-4 lg:grid-cols-3">
+  <div data-animate class="card p-5"><p class="text-sm text-slate-500">Student seats</p><p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ seats_used }}<span class="text-base text-slate-400"> / {{ tenant.seat_limit|default:"∞" }}</span></p></div>
+  <div data-animate class="card p-5 lg:col-span-2">
+    <div class="flex items-start gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="shield" %}</span>
+    <div><p class="font-semibold text-ink">Need to add someone?</p><p class="mt-1 text-sm text-slate-600">Invites are added by the platform admin. Send the emails to <a class="font-semibold text-brand hover:underline" href="mailto:{{ CONTACT_EMAIL }}?subject={{ tenant.name|urlencode }}%20access">{{ CONTACT_EMAIL }}</a> and they'll be able to sign in straight away.</p></div></div>
+  </div>
+</div>
+<section data-animate class="card mt-6 overflow-hidden">
+  <h2 class="px-5 pt-5 font-display text-lg font-bold text-ink">Invited emails</h2>
+  <div class="mt-3 overflow-x-auto">
+    <table class="table-clean" data-testid="invites">
+      <thead><tr><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for invite in invites %}<tr><td class="font-medium text-ink">{{ invite.email }}</td><td>{{ invite.get_role_display }}</td><td>{% if invite.accepted_at %}<span class="chip-good">Joined {{ invite.accepted_at|date:"j M" }}</span>{% else %}<span class="chip-warn">Waiting for first sign-in</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="3" class="text-slate-500">No invites yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+<section data-animate class="card mt-6 p-5">
+  <h2 class="font-display text-lg font-bold text-ink">Org admins</h2>
+  <ul class="mt-3 flex flex-wrap gap-2">{% for m in org_members %}<li class="chip-brand">{{ m.user.profile.display_name|default:m.user.email }}</li>{% empty %}<li class="text-sm text-slate-500">None yet.</li>{% endfor %}</ul>
+</section>
+{% endblock %}

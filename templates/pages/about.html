@@ -2,9 +2,34 @@
 
 {% block title %}About | IELTS Portal{% endblock %}
 
-{% block content %}
-<div data-animate class="max-w-2xl">
-  <h1 class="text-3xl font-bold">About</h1>
-  <p class="mt-4 text-slate-600">IELTS Portal helps candidates prepare for PTE and IELTS exams with mocks, drills and practice analytics.</p>
-</div>
+{% block main %}
+<main id="main" class="flex-1">
+  {% include "pages/_page_hero.html" with eyebrow="About" title='We think practice should <span class="font-serif font-normal italic text-gradient">fit the student</span>.' lead="IELTS Portal helps candidates prepare for PTE and IELTS with mocks, drills and practice analytics that adapt to each person, not one question bank for everyone." %}
+
+  <section class="mx-auto grid max-w-6xl gap-12 px-4 pt-24 sm:px-6 lg:grid-cols-[1fr_1.2fr]">
+    <div data-animate>
+      <p class="eyebrow">Why we built it</p>
+      <h2 class="mt-3 text-3xl font-extrabold text-ink sm:text-4xl">Students lose weeks practising the wrong things.</h2>
+    </div>
+    <div data-animate class="space-y-5 text-lg leading-relaxed text-slate-600">
+      <p>Most preparation apps are a long list of questions. Everyone gets the same ones in the same order, and it's up to the student to work out what's actually holding their score back.</p>
+      <p>We start from the other end: score every attempt, find the skill and question type that's costing you marks, and send you there next, at a level that stretches you without overwhelming you.</p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 pt-24 sm:px-6">
+    <div class="grid gap-5 md:grid-cols-3">
+      <div data-animate class="card p-7"><span class="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="route" %}</span><h3 class="mt-5 text-lg font-bold text-ink">Personal, not generic</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Your path is built from your own results and keeps changing as you improve.</p></div>
+      <div data-animate class="card p-7"><span class="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="clock" %}</span><h3 class="mt-5 text-lg font-bold text-ink">True to the real exam</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Original content written to the official formats, question types and timings.</p></div>
+      <div data-animate class="card p-7"><span class="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name="shield" %}</span><h3 class="mt-5 text-lg font-bold text-ink">Honest about scores</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Practice scores are estimates to track progress, never presented as official results.</p></div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+    <div data-animate class="flex flex-col items-start justify-between gap-6 rounded-[2rem] ring-gradient p-10 md:flex-row md:items-center">
+      <div><h2 class="text-2xl font-extrabold text-ink sm:text-3xl">Ready to see your own path?</h2><p class="mt-2 text-slate-600">Sign in with Google. It takes a few seconds.</p></div>
+      <a href="{% url 'accounts:login' %}" class="btn-primary btn-lg shrink-0">Start practising {% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</a>
+    </div>
+  </section>
+</main>
 {% endblock %}

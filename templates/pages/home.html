@@ -1,45 +1,249 @@
 {% extends "base.html" %}
 
-{% block title %}Home | IELTS Portal{% endblock %}
+{% block title %}IELTS Portal · Adaptive PTE &amp; IELTS practice{% endblock %}
 
-{% block content %}
-<section class="grid items-center gap-8 md:grid-cols-2">
-  <div data-animate>
-    <h1 class="text-4xl font-bold tracking-tight md:text-5xl">Practise PTE &amp; IELTS with confidence</h1>
-    <p class="mt-4 text-lg text-slate-600">Full mocks, section drills and question-wise practice with transparent, practice-grade scoring.</p>
-    <div class="mt-6 flex gap-3">
-      {% if user.is_authenticated %}
-      <a href="{% url 'accounts:home' %}" class="rounded-lg bg-brand px-5 py-2.5 font-semibold text-brand-fg shadow-sm hover:opacity-90">Go to dashboard</a>
-      {% else %}
-      <a href="{% url 'accounts:login' %}" class="rounded-lg bg-brand px-5 py-2.5 font-semibold text-brand-fg shadow-sm hover:opacity-90">Sign in with Google</a>
-      {% endif %}
-      <a href="#exams" class="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold hover:bg-white">Browse exams</a>
-      <a href="{% url 'pages:about' %}" class="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold hover:bg-white">Learn more</a>
+{% block main %}
+<main id="main" class="flex-1">
+  {# ---------- Hero ---------- #}
+  <section class="px-3 pt-3 sm:px-4 sm:pt-4">
+    <div class="relative isolate overflow-hidden rounded-[2rem] bg-aurora text-white">
+      <div class="pointer-events-none absolute inset-0 -z-10 bg-grid"></div>
+      <div class="mx-auto grid max-w-7xl items-center gap-14 px-6 pt-16 pb-20 sm:px-10 lg:grid-cols-[1.05fr_1fr] lg:pt-24 lg:pb-28">
+        <div>
+          <a data-animate href="#how" class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 py-1 pr-3 pl-1 text-xs font-medium text-white/80 backdrop-blur transition hover:bg-white/10">
+            <span class="rounded-full bg-gradient-to-r from-aurora-1 to-aurora-2 px-2 py-0.5 text-[11px] font-semibold text-white">New</span>
+            Adaptive practice for PTE &amp; IELTS
+            {% include "components/icon.html" with name="arrow" cls="h-3.5 w-3.5" %}
+          </a>
+          <h1 data-animate class="mt-6 text-5xl leading-[1.02] font-extrabold sm:text-6xl lg:text-7xl">
+            Practice that<br><span class="font-serif font-normal italic text-gradient animate-shimmer pr-3">learns you.</span>
+          </h1>
+          <p data-animate class="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
+            Other apps give every student the same questions. IELTS Portal reads your scores, finds the skill holding you back and picks your next question for you, so every session moves your band.
+          </p>
+          <div data-animate class="mt-9 flex flex-wrap items-center gap-3">
+            {% if user.is_authenticated %}
+            <a href="{% url 'accounts:home' %}" class="btn-light btn-lg">Go to dashboard {% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn-light btn-lg">
+              <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+              Sign in with Google
+            </a>
+            {% endif %}
+            <a href="#how" class="btn-glass btn-lg">See how it works</a>
+          </div>
+          <ul data-animate class="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+            <li class="flex items-center gap-2">{% include "components/icon.html" with name="check" cls="h-4 w-4 text-aurora-3" %}Real exam timings</li>
+            <li class="flex items-center gap-2">{% include "components/icon.html" with name="check" cls="h-4 w-4 text-aurora-3" %}Instant practice scores</li>
+            <li class="flex items-center gap-2">{% include "components/icon.html" with name="check" cls="h-4 w-4 text-aurora-3" %}No passwords, just Google</li>
+          </ul>
+        </div>
+
+        {# Illustrative product preview #}
+        <div data-animate data-delay="0.15" class="relative mx-auto w-full max-w-md lg:max-w-none">
+          <div class="absolute -inset-8 -z-10 rounded-full bg-aurora-1/30 blur-3xl"></div>
+          <div class="card-dark p-5 shadow-2xl shadow-black/40 sm:p-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-amber-300 to-pink-500 text-sm font-bold text-ink">A</span>
+                <div><p class="text-sm font-semibold">Aisha's session</p><p class="text-xs text-slate-400">IELTS Academic · target 7.0</p></div>
+              </div>
+              <span class="chip bg-emerald-400/15 text-emerald-300"><span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>Adapting</span>
+            </div>
+            <div class="mt-6 space-y-3.5">
+              <div><div class="flex justify-between text-xs"><span class="text-slate-300">Listening</span><span class="font-semibold">7.0</span></div><div class="mt-1.5 h-1.5 rounded-full bg-white/10"><div class="h-full w-[86%] rounded-full bg-gradient-to-r from-aurora-1 to-aurora-3"></div></div></div>
+              <div><div class="flex justify-between text-xs"><span class="text-amber-300">Reading · focus</span><span class="font-semibold text-amber-300">6.0</span></div><div class="mt-1.5 h-1.5 rounded-full bg-white/10"><div class="h-full w-[62%] rounded-full bg-gradient-to-r from-amber-400 to-orange-500"></div></div></div>
+              <div><div class="flex justify-between text-xs"><span class="text-slate-300">Writing</span><span class="font-semibold">6.5</span></div><div class="mt-1.5 h-1.5 rounded-full bg-white/10"><div class="h-full w-[74%] rounded-full bg-gradient-to-r from-aurora-1 to-aurora-3"></div></div></div>
+              <div><div class="flex justify-between text-xs"><span class="text-slate-300">Speaking</span><span class="font-semibold">7.0</span></div><div class="mt-1.5 h-1.5 rounded-full bg-white/10"><div class="h-full w-[84%] rounded-full bg-gradient-to-r from-aurora-1 to-aurora-3"></div></div></div>
+            </div>
+            <div class="mt-6 rounded-xl border border-white/10 bg-white/[0.06] p-4">
+              <p class="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.16em] text-aurora-3 uppercase">{% include "components/icon.html" with name="spark" cls="h-3.5 w-3.5" %}Next, chosen for you</p>
+              <p class="mt-2 font-display text-lg font-bold">True / False / Not Given</p>
+              <p class="text-sm text-slate-400">Reading · pitched at band 6.5 · about 8 min</p>
+              <p class="mt-3 text-xs leading-relaxed text-slate-400">You missed 4 of 6 of these last time. We'll start just above that level and step up as you get them right.</p>
+              <div class="mt-4 flex items-center gap-2">
+                <span class="btn bg-white px-3 py-2 text-xs text-ink">{% include "components/icon.html" with name="play" cls="h-3.5 w-3.5" %}Start drill</span>
+                <span class="text-xs text-slate-500">or take a full mock</span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute top-[38%] -right-6 hidden animate-float rounded-2xl border border-white/10 bg-ink-2/90 px-4 py-3 shadow-xl backdrop-blur sm:block">
+            <p class="text-[11px] text-slate-400">Weak spot found</p>
+            <p class="text-sm font-semibold">Reading · TFNG</p>
+          </div>
+          <div class="absolute -bottom-6 -left-4 hidden animate-float rounded-2xl border border-white/10 bg-ink-2/90 px-4 py-3 shadow-xl backdrop-blur [animation-delay:-3s] sm:block">
+            <p class="text-[11px] text-slate-400">Difficulty</p>
+            <p class="flex items-center gap-1.5 text-sm font-semibold">{% include "components/icon.html" with name="trend" cls="h-4 w-4 text-emerald-400" %}Stepping up after 3 correct</p>
+          </div>
+          <p class="mt-10 text-center text-[11px] text-slate-500">Illustrative preview</p>
+        </div>
+      </div>
     </div>
-  </div>
-  <div data-animate class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-       x-data="{ open: false, health: 'checking…' }"
-       x-init="api.get('/health/').then(d => health = d.status).catch(() => health = 'unreachable')">
-    <p class="text-sm text-slate-500">API status: <span class="font-semibold text-brand" x-text="health"></span></p>
-    <button type="button" class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" @click="open = !open">
-      Toggle details
-    </button>
-    <p x-cloak x-show="open" x-transition.opacity.duration.300ms class="mt-4 text-sm text-slate-600">
-      Alpine.js, Motion One and the central <code>api.js</code> client are wired up.
-    </p>
-  </div>
-</section>
+  </section>
 
-<section id="exams" class="mt-16">
-  <h2 class="text-2xl font-bold">Exams</h2>
-  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    {% for exam in exams %}
-    <article data-animate class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <span class="inline-block rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">{{ exam.badge }}</span>
-      <h3 class="mt-3 text-lg font-semibold">{{ exam.name }}</h3>
-      <p class="mt-1 text-sm text-slate-600">{{ exam.blurb }}</p>
-    </article>
-    {% endfor %}
-  </div>
-</section>
+  {# ---------- Exams ---------- #}
+  <section id="exams" class="mx-auto max-w-7xl scroll-mt-20 px-4 pt-24 sm:px-6">
+    <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+      <div data-animate>
+        <p class="eyebrow">Four exams, one place</p>
+        <h2 class="mt-3 max-w-xl text-4xl font-extrabold text-ink sm:text-5xl">Built around the real tests.</h2>
+      </div>
+      <p data-animate class="max-w-md text-slate-600">Original content written to the real formats, question types and timings, so practice feels like test day.</p>
+    </div>
+    <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {% for exam in exams %}
+      <article data-animate class="card card-hover group relative overflow-hidden p-6">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r {{ exam.accent }}"></div>
+        <span class="chip-muted">{{ exam.badge }}</span>
+        <h3 class="mt-4 text-xl font-bold text-ink">{{ exam.name }}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ exam.blurb }}</p>
+        <p class="mt-6 text-xs font-medium text-slate-400">{{ exam.meta }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ---------- Traditional vs adaptive ---------- #}
+  <section id="how" class="mx-auto max-w-7xl scroll-mt-20 px-4 pt-28 sm:px-6">
+    <div data-animate class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow">Why it's different</p>
+      <h2 class="mt-3 text-4xl font-extrabold text-ink sm:text-5xl">Same questions for everyone <span class="font-serif font-normal italic text-slate-400">doesn't</span> work.</h2>
+      <p class="mt-5 text-lg text-slate-600">A band 5.5 student and a band 7.5 student need completely different practice. We treat them that way.</p>
+    </div>
+    <div class="mt-14 grid gap-5 lg:grid-cols-2">
+      <div data-animate class="card p-8">
+        <p class="text-sm font-semibold text-slate-500">Traditional practice apps</p>
+        <ul class="mt-6 space-y-4 text-slate-600">
+          <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400">{% include "components/icon.html" with name="x" cls="h-3.5 w-3.5" %}</span>One fixed question bank for every student</li>
+          <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400">{% include "components/icon.html" with name="x" cls="h-3.5 w-3.5" %}</span>Questions in the same order, whatever your level</li>
+          <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400">{% include "components/icon.html" with name="x" cls="h-3.5 w-3.5" %}</span>You guess which skill to work on next</li>
+          <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-400">{% include "components/icon.html" with name="x" cls="h-3.5 w-3.5" %}</span>A score at the end and little else</li>
+        </ul>
+      </div>
+      <div data-animate data-delay="0.1" class="relative overflow-hidden rounded-2xl bg-ink p-8 text-white shadow-lift">
+        <div class="pointer-events-none absolute inset-0 bg-aurora opacity-70"></div>
+        <div class="relative">
+          <p class="text-sm font-semibold text-aurora-3">IELTS Portal</p>
+          <ul class="mt-6 space-y-4 text-slate-200">
+            <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-aurora-3/20 text-aurora-3">{% include "components/icon.html" with name="check" cls="h-3.5 w-3.5" %}</span>A different path for every student, built from their own scores</li>
+            <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-aurora-3/20 text-aurora-3">{% include "components/icon.html" with name="check" cls="h-3.5 w-3.5" %}</span>Difficulty pitched just above your current level</li>
+            <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-aurora-3/20 text-aurora-3">{% include "components/icon.html" with name="check" cls="h-3.5 w-3.5" %}</span>Your weakest skill and question type come first</li>
+            <li class="flex gap-3"><span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-aurora-3/20 text-aurora-3">{% include "components/icon.html" with name="check" cls="h-3.5 w-3.5" %}</span>Criteria-level feedback and full answer review after every attempt</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    {# How it works steps #}
+    <div class="mt-24 grid gap-10 md:grid-cols-3">
+      {% for step in steps %}
+      <div data-animate class="relative">
+        <div class="flex items-center gap-4">
+          <span class="grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand ring-1 ring-brand/15">{% include "components/icon.html" with name=step.icon cls="h-6 w-6" %}</span>
+          <span class="font-display text-sm font-bold text-slate-300">0{{ forloop.counter }}</span>
+          {% if not forloop.last %}<span class="hidden h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent md:block"></span>{% endif %}
+        </div>
+        <h3 class="mt-6 text-xl font-bold text-ink">{{ step.title }}</h3>
+        <p class="mt-2 leading-relaxed text-slate-600">{{ step.body }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ---------- Feature bento ---------- #}
+  <section class="mx-auto max-w-7xl px-4 pt-28 sm:px-6">
+    <div data-animate class="max-w-2xl">
+      <p class="eyebrow">Everything test day asks of you</p>
+      <h2 class="mt-3 text-4xl font-extrabold text-ink sm:text-5xl">Full mocks, section drills and single questions.</h2>
+    </div>
+    <div class="mt-12 grid gap-5 md:grid-cols-6">
+      <div data-animate class="card relative overflow-hidden p-8 md:col-span-4">
+        <div class="pointer-events-none absolute inset-0 bg-aurora-soft"></div>
+        <div class="relative grid gap-8 md:grid-cols-2 md:items-center">
+          <div>
+            <span class="grid h-11 w-11 place-items-center rounded-xl bg-ink text-white">{% include "components/icon.html" with name="trophy" cls="h-5 w-5" %}</span>
+            <h3 class="mt-5 text-2xl font-bold text-ink">See your band the moment you finish</h3>
+            <p class="mt-2 text-slate-600">An overall score, a score for every section, and Writing and Speaking broken down by the criteria examiners use.</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+            <div class="flex items-end justify-between"><p class="text-sm text-slate-500">Overall band</p><p class="font-display text-5xl font-extrabold text-ink" data-count="6.5">6.5</p></div>
+            <div class="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
+              <div class="rounded-lg bg-slate-50 py-2"><p class="text-slate-500">L</p><p class="font-bold text-ink">7.0</p></div>
+              <div class="rounded-lg bg-amber-50 py-2"><p class="text-amber-700">R</p><p class="font-bold text-amber-800">6.0</p></div>
+              <div class="rounded-lg bg-slate-50 py-2"><p class="text-slate-500">W</p><p class="font-bold text-ink">6.5</p></div>
+              <div class="rounded-lg bg-slate-50 py-2"><p class="text-slate-500">S</p><p class="font-bold text-ink">7.0</p></div>
+            </div>
+            <p class="mt-3 text-[11px] text-slate-400">Example result · practice estimate</p>
+          </div>
+        </div>
+      </div>
+      {% for f in features %}
+      <div data-animate class="card card-hover p-7 md:col-span-2">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">{% include "components/icon.html" with name=f.icon %}</span>
+        <h3 class="mt-5 text-lg font-bold text-ink">{{ f.title }}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ f.body }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ---------- Institutes band ---------- #}
+  <section class="mx-auto max-w-7xl px-4 pt-28 sm:px-6">
+    <div data-animate class="relative isolate overflow-hidden rounded-[2rem] bg-ink px-8 py-14 text-white sm:px-14">
+      <div class="pointer-events-none absolute inset-0 -z-10 bg-aurora opacity-80"></div>
+      <div class="pointer-events-none absolute inset-0 -z-10 bg-grid"></div>
+      <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div>
+          <p class="text-xs font-semibold tracking-[0.18em] text-aurora-3 uppercase">For institutes &amp; teachers</p>
+          <h2 class="mt-3 text-3xl font-extrabold sm:text-4xl">Every student on their own path. All of them in one view.</h2>
+          <p class="mt-4 max-w-lg text-slate-300">Add your students by email, let them sign in with Google, and follow every attempt, score and weak skill from your org dashboard.</p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="{% url 'pages:institutes' %}" class="btn-light">Explore institutes {% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</a>
+            <a href="{% url 'pages:contact' %}" class="btn-glass">Book a demo</a>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="card-dark p-5"><span class="text-aurora-3">{% include "components/icon.html" with name="users" %}</span><p class="mt-3 font-semibold">Invite by email</p><p class="mt-1 text-sm text-slate-400">Students join your org on first sign-in.</p></div>
+          <div class="card-dark p-5"><span class="text-aurora-3">{% include "components/icon.html" with name="chart" %}</span><p class="mt-3 font-semibold">Track progress</p><p class="mt-1 text-sm text-slate-400">Attempts and scores for each student.</p></div>
+          <div class="card-dark p-5"><span class="text-aurora-3">{% include "components/icon.html" with name="shield" %}</span><p class="mt-3 font-semibold">Private by default</p><p class="mt-1 text-sm text-slate-400">Your content and students stay in your org.</p></div>
+          <div class="card-dark p-5"><span class="text-aurora-3">{% include "components/icon.html" with name="spark" %}</span><p class="mt-3 font-semibold">Your brand</p><p class="mt-1 text-sm text-slate-400">Your colours across the student app.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ---------- FAQ ---------- #}
+  <section class="mx-auto max-w-3xl px-4 pt-28 sm:px-6">
+    <div data-animate class="text-center">
+      <p class="eyebrow">Questions</p>
+      <h2 class="mt-3 text-4xl font-extrabold text-ink">Good to know</h2>
+    </div>
+    <div class="mt-10 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white shadow-soft" x-data="{ open: 0 }">
+      {% for f in faqs %}
+      <div data-animate>
+        <button type="button" class="flex w-full items-center justify-between gap-6 px-6 py-5 text-left font-semibold text-ink" @click="open = open === {{ forloop.counter }} ? null : {{ forloop.counter }}" :aria-expanded="open === {{ forloop.counter }}">
+          {{ f.q }}
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500 transition" :class="open === {{ forloop.counter }} && 'rotate-45 bg-brand/10 text-brand'"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div x-cloak x-show="open === {{ forloop.counter }}" x-transition.opacity class="px-6 pb-6 leading-relaxed text-slate-600">{{ f.a }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ---------- Final CTA ---------- #}
+  <section class="mx-auto max-w-7xl px-4 py-28 sm:px-6">
+    <div data-animate class="relative overflow-hidden rounded-[2rem] ring-gradient p-10 text-center sm:p-16">
+      <div class="pointer-events-none absolute inset-0 bg-aurora-soft"></div>
+      <div class="relative">
+        <h2 class="mx-auto max-w-2xl text-4xl font-extrabold text-ink sm:text-5xl">Your next question is <span class="font-serif font-normal italic text-gradient">already waiting</span>.</h2>
+        <p class="mx-auto mt-5 max-w-lg text-lg text-slate-600">Sign in with Google and take your first mock. Your path starts from your very first answer.</p>
+        <div class="mt-9 flex flex-wrap justify-center gap-3">
+          <a href="{% if user.is_authenticated %}{% url 'accounts:home' %}{% else %}{% url 'accounts:login' %}{% endif %}" class="btn-primary btn-lg">{% if user.is_authenticated %}Open dashboard{% else %}Start practising free{% endif %} {% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</a>
+          <a href="{% url 'pages:institutes' %}" class="btn-ghost btn-lg">I'm an institute</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
 {% endblock %}

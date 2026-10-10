@@ -1,0 +1,7 @@
+<a class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50" href="{% url 'institute:student_detail' m.user_id %}" data-testid="student-row">
+  {% if m.user.profile.avatar_url %}<img src="{{ m.user.profile.avatar_url }}" alt="" class="h-10 w-10 shrink-0 rounded-xl object-cover" referrerpolicy="no-referrer">
+  {% else %}<span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-aurora-1 to-aurora-2 font-display font-bold text-white">{{ m.user.profile.display_name|default:m.user.email|first|upper }}</span>{% endif %}
+  <div class="min-w-0 flex-1"><p class="truncate font-medium text-ink">{{ m.user.profile.display_name|default:m.user.email }}</p><p class="truncate text-xs text-slate-500">{{ m.user.email }}{% if m.user.profile.primary_exam %} · {{ m.user.profile.primary_exam }}{% endif %}</p></div>
+  <div class="hidden text-right text-xs text-slate-500 sm:block"><p><span class="font-semibold text-ink">{{ m.attempt_count }}</span> attempt{{ m.attempt_count|pluralize }}</p><p>{% if m.last_active %}Active {{ m.last_active|timesince }} ago{% else %}Not started{% endif %}</p></div>
+  <span class="text-slate-300">{% include "components/icon.html" with name="arrow" cls="h-4 w-4" %}</span>
+</a>

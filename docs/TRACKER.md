@@ -10,11 +10,12 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | 0 | Skeleton | Done | Settings split, apps, Tailwind build, Alpine + Motion, `api.js`, health API |
 | — | Data models (05) | Done | All models from [05-data-models.md](playbook/05-data-models.md) + admin + initial migrations |
 | 1 | Auth & profiles (Google via Firebase) | Done | Design in [07](playbook/07-authentication-firebase.md); `accounts.User` + `UserProfile` already in place |
-| 2 | Catalogue (dummy data) | Done | Catalog models ready; needs `seed_demo` + screens |
-| 3 | Take mock (dummy) | Not started | `Attempt` / `AttemptItem` models ready |
-| 4 | Scoring stubs | Not started | `ScoreBreakdown` / `ScoringConfig` models ready |
-| 5 | Analytics | Not started | |
-| 6 | Institute admin | Not started | `Tenant` / `Membership` models ready |
+| 2 | Catalogue (dummy data) | Done | `seed_demo`, original IELTS-style content, admin-configurable timings |
+| 3 | Take mock (dummy) | Done | Player, server-side section timers, autosave, speaking upload, listening play rules |
+| 4 | Scoring stubs | Done | Deterministic + stand-in AI scoring, results, answer review, re-score |
+| UX | Premium redesign | Done | Design system, public/student/org app shells, rule-based "Your next step" ([design.md](design.md)) |
+| 5 | Analytics | In progress | Skill map, trend sparkline, results history on the student dashboard; Chart.js + filters still to do |
+| 6 | Institute admin | In progress | Org overview, students, student detail, read-only access/invites; invites managed in Django admin |
 | 7 | Payments later (+ polish) | Not started | `Plan*` / `Entitlement` stubs ready |
 
 ---
@@ -158,32 +159,41 @@ Update the checkboxes and the status table in the same PR that delivers the work
 - [x] UI never says “official”
 - [x] Failed worker sets Attempt FAILED + retry works
 
+## UX — Premium redesign
+
+- [x] Design system: local fonts, aurora/ink tokens, Tailwind v4 `@utility` components, reduced-motion reveal
+- [x] Layouts: `base.html` (public), `app/base.html` (sidebar + phone tabs via `app_nav`), `app/focus.html` (player)
+- [x] Public: home, about, contact, for institutes, login
+- [x] Student: dashboard with rule-based "Your next step", catalogue, mocks, unlock, player, results, review, results history
+- [x] Org: overview, students, student detail, access & invites
+- [ ] Replace rule-based `next_step()` with the AI question picker
+
 ## Phase 5 — Analytics
 
-- [ ] Analytics queries (attempts over time, accuracy by Q-type, section averages)
-- [ ] Dashboard widgets wired to real data
-- [ ] Chart.js charts
-- [ ] Empty states
+- [x] Analytics queries (accuracy by Q-type, section averages, overall trend) — `analytics/insights.py`
+- [x] Dashboard widgets wired to real data (skill map, trend, stats, results history)
+- [ ] Chart.js charts (inline SVG sparkline for now)
+- [x] Empty states
 
 **Acceptance**
 
 - [ ] After ≥3 scored attempts, charts render non-zero series
 - [ ] Filter by exam works
-- [ ] No cross-user data leakage (two students)
+- [x] No cross-user data leakage (two students) — results history test
 
 ## Phase 6 — Institute admin
 
 - [x] `Tenant`, `Membership` models
 - [ ] Tenant-resolve middleware (subdomain or session)
-- [ ] Institute console screens
+- [x] Institute console screens (overview, students + search, student detail, access & invites)
 - [ ] Invite create/accept
-- [ ] Branding colour/logo → CSS vars (`--brand`, `--brand-fg`)
+- [x] Branding colour → CSS vars (`--brand`, `--brand-fg`); logo still to do
 - [ ] Assign entitlement / pack access
 - [ ] Tutor (optional): view-only attempt list + `FeedbackNote`
 
 **Acceptance**
 
-- [ ] Inst admin sees only own students
+- [x] Inst admin sees only own students (student detail 404s outside the org)
 - [ ] Invited student joins tenant and sees branding
 - [ ] `seat_limit` enforced when set
 - [ ] Super Admin can switch/list tenants

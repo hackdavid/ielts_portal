@@ -2,20 +2,206 @@
 
 @source "../../templates";
 @source "../js";
+@source "../../pages";
+@source "../../analytics";
+@source "../../institute";
+
+@font-face {
+  font-family: "Inter";
+  src: url("../vendor/fonts/inter-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../vendor/fonts/jakarta-var.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("../vendor/fonts/instrument-serif-italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
 
 /* Tenant branding overrides --brand / --brand-fg at runtime (see 04-low-level-screens). */
 @theme {
   --color-brand: var(--brand);
   --color-brand-fg: var(--brand-fg);
+  --color-ink: #0a0d1f;
+  --color-ink-2: #12163a;
+  --color-aurora-1: #6d5dfc;
+  --color-aurora-2: #a855f7;
+  --color-aurora-3: #22d3ee;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.04), 0 24px 48px -20px rgb(79 70 229 / 0.35);
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 3s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes shimmer {
+    to { background-position: 200% center; }
+  }
 }
 
 @layer base {
   :root {
-    --brand: #0f766e;
+    --brand: #5b4cf0;
     --brand-fg: #ffffff;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--brand) 22%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 
   [x-cloak] {
     display: none !important;
   }
+
+  .js [data-animate] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .js [data-animate].is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .js [data-animate] { opacity: 1; transform: none; transition: none; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility btn-lg {
+  @apply px-6 py-3.5 text-base;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-brand-fg shadow-[0_8px_24px_-8px_var(--brand)] hover:-translate-y-0.5 hover:brightness-110;
+}
+@utility btn-dark {
+  @apply btn bg-ink text-white hover:-translate-y-0.5 hover:bg-ink-2;
+}
+@utility btn-light {
+  @apply btn bg-white text-ink shadow-soft hover:-translate-y-0.5;
+}
+@utility btn-ghost {
+  @apply btn border border-slate-200 bg-white/70 text-slate-700 backdrop-blur hover:border-slate-300 hover:bg-white;
+}
+@utility btn-glass {
+  @apply btn border border-white/15 bg-white/5 text-white backdrop-blur hover:bg-white/10;
+}
+@utility card {
+  @apply rounded-2xl border border-slate-200/80 bg-white shadow-soft;
+}
+@utility card-hover {
+  @apply transition duration-300 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-lift;
+}
+@utility card-dark {
+  @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+}
+@utility chip-brand {
+  @apply chip bg-brand/10 text-brand;
+}
+@utility chip-muted {
+  @apply chip bg-slate-100 text-slate-600;
+}
+@utility chip-good {
+  @apply chip bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15;
+}
+@utility chip-warn {
+  @apply chip bg-amber-50 text-amber-800 ring-1 ring-amber-600/15;
+}
+@utility eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.18em] text-brand;
+}
+@utility field {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm shadow-sm transition focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none;
+}
+@utility nav-link {
+  @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-ink;
+}
+@utility side-link {
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-ink;
+  &[aria-current="page"] { @apply bg-brand/10 text-brand; }
+  & svg { @apply h-5 w-5 shrink-0; }
+}
+@utility tab-link {
+  @apply flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium text-slate-500;
+  &[aria-current="page"] { @apply text-brand; }
+  & svg { @apply h-5 w-5; }
+}
+@utility table-clean {
+  @apply w-full text-left text-sm;
+  & th { @apply px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500; }
+  & td { @apply border-t border-slate-100 px-5 py-3.5; }
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(100deg, var(--color-aurora-1), var(--color-aurora-2) 45%, var(--color-aurora-3));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-aurora {
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgb(109 93 252 / 0.45), transparent 60%),
+    radial-gradient(45% 45% at 85% 20%, rgb(168 85 247 / 0.35), transparent 60%),
+    radial-gradient(50% 50% at 60% 100%, rgb(34 211 238 / 0.25), transparent 60%),
+    var(--color-ink);
+}
+
+@utility bg-aurora-soft {
+  background:
+    radial-gradient(50% 60% at 0% 0%, rgb(109 93 252 / 0.12), transparent 60%),
+    radial-gradient(40% 50% at 100% 0%, rgb(34 211 238 / 0.10), transparent 60%);
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 40%, transparent 100%);
+}
+
+@utility ring-gradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(120deg, var(--color-aurora-1), var(--color-aurora-2), var(--color-aurora-3)) border-box;
 }
