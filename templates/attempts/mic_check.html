@@ -5,8 +5,9 @@
 <section class="mx-auto mt-10 max-w-md card p-8 shadow-sm" data-animate
          x-data="{ level: 0, state: 'idle', async check() {
            try {
+             const ctx = new AudioContext();
              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-             const ctx = new AudioContext(); const an = ctx.createAnalyser(); ctx.createMediaStreamSource(stream).connect(an);
+             await ctx.resume(); const an = ctx.createAnalyser(); ctx.createMediaStreamSource(stream).connect(an);
              const buf = new Uint8Array(an.fftSize); this.state = 'listening';
              const loop = () => { an.getByteTimeDomainData(buf); let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v - 128)); this.level = Math.min(100, peak * 1.6); requestAnimationFrame(loop); };
              loop();
