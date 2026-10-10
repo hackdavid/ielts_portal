@@ -28,7 +28,7 @@ sequenceDiagram
   B->>D: api.post("/auth/firebase/", {id_token})  (CSRF via api.js)
   D->>D: firebase_admin.auth.verify_id_token(id_token)
   D->>D: get-or-create User, django.contrib.auth.login()
-  D-->>B: {redirect: "/onboarding/" | "/dashboard/" | "/org/" | "/platform/"}
+  D-->>B: {redirect: "/onboarding/" | "/dashboard/" | "/org/" | "/admin/"}
   B->>G: signOut()  (Firebase client state no longer needed)
   B->>B: location.href = redirect
 ```
@@ -82,8 +82,8 @@ user.last_login updated by login()
 
 | Condition | Redirect |
 |-----------|----------|
-| `role_primary == super_admin` | `/platform/` |
-| active `Membership` with role `institute_admin` | `/org/` |
+| superuser (`super_admin`) | `/admin/` |
+| active `Membership` with role `org` | `/org/` |
 | `profile.onboarded_at is None` | `/onboarding/` |
 | otherwise | `/dashboard/` |
 
@@ -118,8 +118,7 @@ No password-reset tables or tokens are used.
 | GET | `/accounts/home/` | `accounts:home` | role router (redirect) |
 | GET/POST | `/onboarding/` | `accounts:onboarding` | exam + target score (institute code later, Phase 6) |
 | GET | `/dashboard/` | `analytics:dashboard` | `StudentRequiredMixin` |
-| GET | `/org/` | `institute:console` | `InstituteAdminRequiredMixin` (stub) |
-| GET | `/platform/` | `accounts:platform` | `SuperAdminRequiredMixin` (stub) |
+| GET | `/org/` | `institute:console` | `OrgRequiredMixin` |
 
 `api.js` wiring: `api.onUnauthorized(() => location.href = "/accounts/login/?next=" + encodeURIComponent(location.pathname))`.
 
