@@ -59,7 +59,12 @@ def labelled_plan(pack):
 
 def exam_packs(exam, request):
     packs = visible(exam.mock_packs.annotate(item_count=Count("items")), request)
-    return mark_locked(request, packs.order_by("-is_free", "title"))
+    packs = mark_locked(request, packs.order_by("-is_free", "title"))
+    for pack in packs:
+        pack.total_sec = sum(
+            r["duration_sec"] + r["extra_sec"] for r in pack.section_plan()
+        )
+    return packs
 
 
 class ExamMixin(RoleRequiredMixin):
@@ -168,11 +173,13 @@ class MockDetailView(RoleRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pack = _get_pack(self.request, self.kwargs["pk"])
+        plan = labelled_plan(pack)
         context.update(
             pack=pack,
             exam=pack.exam,
-            sections=labelled_plan(pack),
-            item_count=pack.items.count(),
+            sections=plan,
+            item_count=sum(r["sets"] for r in plan),
+            total_sec=sum(r["duration_sec"] + r["extra_sec"] for r in plan),
         )
         return context
 

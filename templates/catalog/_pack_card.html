@@ -5,5 +5,5 @@
     {% elif pack.locked %}<span class="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">🔒 Locked</span>
     {% else %}<span class="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">Unlocked</span>{% endif %}
   </div>
-  <p class="mt-2 text-sm text-slate-600">{{ pack.item_count }} question sets · {% widthratio pack.duration_sec 60 1 %} min</p>
+  <p class="mt-2 text-sm text-slate-600">{{ pack.item_count }} question sets · {% widthratio pack.total_sec 60 1 %} min</p>
 </a>
