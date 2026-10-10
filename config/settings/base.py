@@ -128,7 +128,29 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-LOGIN_URL = "admin:login"
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "accounts:home"
+
+# Google sign-in popups need to talk back to the opener window.
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+
+# Firebase Authentication (Google sign-in). Web config values are public, not secrets.
+FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "")
+FIREBASE_WEB_CONFIG = {
+    "apiKey": os.environ.get("FIREBASE_WEB_API_KEY", ""),
+    "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
+    "projectId": FIREBASE_PROJECT_ID,
+    "appId": os.environ.get("FIREBASE_APP_ID", ""),
+}
+FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON", "")
+FIREBASE_AUTH_EMULATOR_HOST = os.environ.get("FIREBASE_AUTH_EMULATOR_HOST", "")
+FIREBASE_ALLOWED_EMAIL_DOMAINS = [
+    d.strip().lower()
+    for d in os.environ.get("FIREBASE_ALLOWED_EMAIL_DOMAINS", "").split(",")
+    if d.strip()
+]
+FIREBASE_MAX_AUTH_AGE_SECONDS = 300
+FIREBASE_LOGIN_RATE_LIMIT_PER_MINUTE = 10
 
 PRACTICE_SCORE_DISCLAIMER = (
     "Practice scores are approximations — not official Pearson/IELTS results."

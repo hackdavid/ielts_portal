@@ -17,3 +17,11 @@
   window.ui = { animateIn };
   document.addEventListener("DOMContentLoaded", () => animateIn());
 })();
+
+// Session expired / not signed in → send the user to login, then back here.
+if (window.api) {
+  window.api.onUnauthorized((err) => {
+    if (err.status !== 401 || location.pathname.startsWith("/accounts/login")) return;
+    location.href = "/accounts/login/?next=" + encodeURIComponent(location.pathname + location.search);
+  });
+}

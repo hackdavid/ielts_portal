@@ -57,7 +57,7 @@ Reject (HTTP 401, JSON `{error}`) unless **all** hold:
 - `auth_time` within the last 5 minutes (a stolen old token can't mint a session)
 - optional `FIREBASE_ALLOWED_EMAIL_DOMAINS` allow-list (empty = any Google account)
 
-`verify_id_token` only needs the project ID and Google's public certs, so **no service-account key is required** for login. `FIREBASE_SERVICE_ACCOUNT_JSON` is optional and only needed later for revocation checks / disabling users from Django.
+`verify_id_token` only needs the project ID and Google's public certs, so **no service-account key is required** for login (the app is initialised with an anonymous credential unless `FIREBASE_SERVICE_ACCOUNT_JSON` is set). `FIREBASE_SERVICE_ACCOUNT_JSON` is optional and only needed later for revocation checks / disabling users from Django.
 
 ---
 
@@ -115,7 +115,11 @@ No password-reset tables or tokens are used.
 | POST | `/api/auth/firebase/` | `accounts:firebase_login` | body `{id_token}`; rate-limited (e.g. 10/min/IP) |
 | POST | `/api/auth/logout/` | `accounts:logout` | session logout |
 | GET | `/api/auth/me/` | `accounts:me` | `{authenticated, email, display_name, role, onboarded}` |
-| GET/POST | `/onboarding/` | `accounts:onboarding` | exam + target (+ optional institute code) |
+| GET | `/accounts/home/` | `accounts:home` | role router (redirect) |
+| GET/POST | `/onboarding/` | `accounts:onboarding` | exam + target score (institute code later, Phase 6) |
+| GET | `/dashboard/` | `analytics:dashboard` | `StudentRequiredMixin` |
+| GET | `/org/` | `institute:console` | `InstituteAdminRequiredMixin` (stub) |
+| GET | `/platform/` | `accounts:platform` | `SuperAdminRequiredMixin` (stub) |
 
 `api.js` wiring: `api.onUnauthorized(() => location.href = "/accounts/login/?next=" + encodeURIComponent(location.pathname))`.
 
@@ -138,7 +142,7 @@ Firebase console setup:
 
 Django settings gotcha: popup sign-in needs `SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"` (Django's default `same-origin` breaks the popup handshake).
 
-Dependencies: `firebase-admin` (Python). Firebase Web SDK pinned version, loaded as ES modules (vendored under `static/vendor/firebase/` or from `www.gstatic.com/firebasejs/<version>/`).
+Dependencies: `firebase-admin` 7.x (Python). Firebase Web SDK 12.19.0 vendored as ES modules in `static/vendor/firebase/` (see `VERSION` there); `config/settings/dev.py` carries the dev project's public web config, env vars override it.
 
 ---
 

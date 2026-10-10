@@ -1,12 +1,31 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import Lower
 
 from core.models import TimeStampedModel
 
 
 class User(AbstractUser):
     """Custom user so auth fields can evolve without a painful swap later."""
+
+    firebase_uid = models.CharField(
+        max_length=128,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Firebase Authentication uid (Google sign-in).",
+    )
+
+    class Meta(AbstractUser.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"),
+                condition=~Q(email=""),
+                name="accounts_user_email_ci_unique",
+            )
+        ]
 
 
 class Role(models.TextChoices):
@@ -41,6 +60,7 @@ class UserProfile(TimeStampedModel):
     timezone = models.CharField(max_length=64, default="Asia/Kolkata")
     free_mocks_remaining = models.PositiveIntegerField(default=1)
     onboarded_at = models.DateTimeField(null=True, blank=True)
+    avatar_url = models.URLField(max_length=500, blank=True)
     meta = models.JSONField(default=dict, blank=True)
 
     def __str__(self):

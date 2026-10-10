@@ -8,7 +8,12 @@
     <h1 class="text-4xl font-bold tracking-tight md:text-5xl">Practise PTE &amp; IELTS with confidence</h1>
     <p class="mt-4 text-lg text-slate-600">Full mocks, section drills and question-wise practice with transparent, practice-grade scoring.</p>
     <div class="mt-6 flex gap-3">
-      <a href="#exams" class="rounded-lg bg-brand px-5 py-2.5 font-semibold text-brand-fg shadow-sm hover:opacity-90">Browse exams</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'accounts:home' %}" class="rounded-lg bg-brand px-5 py-2.5 font-semibold text-brand-fg shadow-sm hover:opacity-90">Go to dashboard</a>
+      {% else %}
+      <a href="{% url 'accounts:login' %}" class="rounded-lg bg-brand px-5 py-2.5 font-semibold text-brand-fg shadow-sm hover:opacity-90">Sign in with Google</a>
+      {% endif %}
+      <a href="#exams" class="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold hover:bg-white">Browse exams</a>
       <a href="{% url 'pages:about' %}" class="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold hover:bg-white">Learn more</a>
     </div>
   </div>

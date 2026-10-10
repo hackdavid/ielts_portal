@@ -13,6 +13,9 @@ class UserProfileInline(admin.StackedInline):
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     inlines = [UserProfileInline]
+    list_display = ["username", "email", "firebase_uid", "is_staff", "is_active"]
+    search_fields = ["username", "email", "firebase_uid", "first_name", "last_name"]
+    fieldsets = BaseUserAdmin.fieldsets + (("Firebase", {"fields": ["firebase_uid"]}),)
 
     def get_inlines(self, request, obj):
         # The profile is created by a post_save signal, so only edit it on change.

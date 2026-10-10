@@ -20,9 +20,7 @@ from tenancy.models import Membership, Tenant
 class CatalogToScoreFlowTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.exam = Exam.objects.create(
-            code="PTE_ACADEMIC", slug="pte-academic", name="PTE Academic", kind="pte"
-        )
+        cls.exam = Exam.objects.get(code="PTE_ACADEMIC")
         cls.qtype = QuestionType.objects.create(
             exam=cls.exam,
             code="RA",

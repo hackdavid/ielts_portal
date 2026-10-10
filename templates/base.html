@@ -17,10 +17,21 @@
   <header class="border-b border-slate-200 bg-white">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
       <a class="text-xl font-bold text-brand" href="{% url 'pages:home' %}">IELTS Portal</a>
-      <nav class="flex gap-6 text-sm font-medium">
+      <nav class="flex items-center gap-6 text-sm font-medium">
         <a class="hover:text-brand" href="{% url 'pages:home' %}">Home</a>
         <a class="hover:text-brand" href="{% url 'pages:about' %}">About</a>
         <a class="hover:text-brand" href="{% url 'pages:contact' %}">Contact</a>
+        {% if user.is_authenticated %}
+        <a class="hover:text-brand" href="{% url 'accounts:home' %}">Dashboard</a>
+        <span x-data="{ busy: false }" class="flex items-center gap-2">
+          {% if user.profile.avatar_url %}<img src="{{ user.profile.avatar_url }}" alt="" class="h-6 w-6 rounded-full" referrerpolicy="no-referrer">{% endif %}
+          <span class="text-slate-600">{{ user.profile.display_name|default:user.email|default:user.username }}</span>
+          <button type="button" class="hover:text-brand" :disabled="busy" data-testid="logout"
+                  @click="busy = true; api.post('/auth/logout/').then(d => location.assign(d.redirect)).catch(() => busy = false)">Log out</button>
+        </span>
+        {% else %}
+        <a class="rounded-lg bg-brand px-3 py-1.5 text-brand-fg hover:opacity-90" href="{% url 'accounts:login' %}">Sign in</a>
+        {% endif %}
       </nav>
     </div>
   </header>
