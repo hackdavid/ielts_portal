@@ -1,6 +1,7 @@
 """Base settings shared by every environment (see dev.py / prod.py)."""
 
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     "plans",
     "institute",
     "pages",
+    "content",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -129,6 +131,65 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Cloudflare R2 (S3 API) for media when R2_BUCKET_NAME is set; local disk otherwise.
+# Objects stay private and are served with short-lived presigned URLs.
+R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "")
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
+if R2_BUCKET_NAME and not TESTING and os.environ.get("MEDIA_STORAGE", "r2") == "r2":
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": R2_BUCKET_NAME,
+            "endpoint_url": os.environ.get("R2_ENDPOINT_URL", ""),
+            "access_key": os.environ.get("R2_ACCESS_KEY_ID", ""),
+            "secret_key": os.environ.get("R2_SECRET_ACCESS_KEY", ""),
+            "region_name": "auto",
+            "signature_version": "s3v4",
+            "location": os.environ.get("R2_ROOT_PREFIX", "").strip("/"),
+            "default_acl": None,
+            "querystring_auth": True,
+            "querystring_expire": int(os.environ.get("R2_URL_EXPIRE_SEC", "1800")),
+            "file_overwrite": False,
+        },
+    }
+
+# Content pipeline (content app). Every provider falls back to a labelled mock
+# when its key/model is missing, so the pipeline runs end to end offline.
+CONTENT_LLM_API_KEY = os.environ.get(
+    "CONTENT_LLM_API_KEY", os.environ.get("OPENAI_API_KEY", "")
+)
+CONTENT_LLM_BASE_URL = os.environ.get("CONTENT_LLM_BASE_URL", "")
+CONTENT_LLM_MODEL = os.environ.get("CONTENT_LLM_MODEL", "gpt-4o-mini")
+CONTENT_LLM_WRITER_MODEL = os.environ.get("CONTENT_LLM_WRITER_MODEL", "")
+CONTENT_EMBEDDING_MODEL = os.environ.get(
+    "CONTENT_EMBEDDING_MODEL", "text-embedding-3-small"
+)
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+# Piper TTS: one small multi-speaker voice (en_GB-vctk-medium, ~77 MB, CPU only).
+CONTENT_TTS_DIR = os.environ.get(
+    "CONTENT_TTS_DIR", str(Path.home() / ".cache" / "ielts_portal" / "piper")
+)
+CONTENT_TTS_VOICE = os.environ.get("CONTENT_TTS_VOICE", "en_GB-vctk-medium")
+CONTENT_TTS_ENABLED = os.environ.get("CONTENT_TTS_ENABLED", "1") == "1"
+# Run jobs in a background thread when queued from admin (dev); else use the
+# `manage.py run_content_jobs` worker.
+CONTENT_JOBS_INLINE = os.environ.get("CONTENT_JOBS_INLINE", "1") == "1"
+# Publishing drafts made by mock providers is allowed only when DEBUG is on.
+CONTENT_ALLOW_MOCK_PUBLISH = os.environ.get("CONTENT_ALLOW_MOCK_PUBLISH", "")
+CONTENT_DEDUP = {
+    "minhash_duplicate": 0.6,
+    "minhash_similar": 0.4,
+    "embedding_duplicate": 0.92,
+    "embedding_similar": 0.85,
+    "copy_minhash": 0.3,
+    "copy_run_words": 12,
+}
 
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:home"

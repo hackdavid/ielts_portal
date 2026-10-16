@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Attempt, AttemptItem, FeedbackNote
+from .models import Attempt, AttemptItem, FeedbackNote, QuestionExposure
 
 
 class AttemptItemInline(admin.TabularInline):
@@ -63,3 +63,11 @@ class FeedbackNoteAdmin(admin.ModelAdmin):
     list_display = ["attempt", "attempt_item", "author", "created_at"]
     search_fields = ["body", "author__username"]
     autocomplete_fields = ["attempt", "attempt_item", "author"]
+
+
+@admin.register(QuestionExposure)
+class QuestionExposureAdmin(admin.ModelAdmin):
+    list_display = ["user", "question", "times_seen", "last_mode", "last_seen_at"]
+    list_filter = ["last_mode"]
+    search_fields = ["user__username", "question__title"]
+    raw_id_fields = ["user", "question"]

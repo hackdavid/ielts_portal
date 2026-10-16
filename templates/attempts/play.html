@@ -35,6 +35,7 @@
       </div>
       {% if item.audio %}{% include "components/audio_player.html" %}{% elif section.section == "listening" %}
       <p class="rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600" data-testid="no-audio">Audio for this part hasn't been uploaded yet.</p>{% endif %}
+      {% if item.image %}<img src="{{ item.image }}" alt="Question image" class="max-h-[60vh] w-full rounded-xl border border-slate-200 bg-white object-contain" data-testid="stimulus-image">{% endif %}
       {% if item.passage and not reading_split %}<article class="whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-relaxed">{{ item.passage }}</article>{% endif %}
       {% if item.context %}<p class="whitespace-pre-line rounded-lg border border-slate-200 p-3 text-sm">{{ item.context }}</p>{% endif %}
       {% include "attempts/items/"|add:item.kind|add:".html" %}
