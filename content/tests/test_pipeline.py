@@ -76,6 +76,16 @@ class PipelineTests(TestCase):
         with self.assertRaises(PublishError):
             publish(draft, self.user)
 
+    def test_revise_replaces_draft(self):
+        from content.pipeline import revise
+
+        draft = self.job(self.pte, "WFD").drafts.get()
+        new = revise(draft, "Shorter sentence")
+        draft.refresh_from_db()
+        self.assertEqual(draft.status, DraftQuestion.Status.REJECTED)
+        self.assertEqual(new.revision_of, draft)
+        self.assertNotIn("None", new.title)
+
     @override_settings(DEBUG=False, CONTENT_ALLOW_MOCK_PUBLISH="")
     def test_mock_drafts_blocked_outside_debug(self):
         draft = self.job(self.pte, "WFD").drafts.get()

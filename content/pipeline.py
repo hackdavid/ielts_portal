@@ -350,7 +350,8 @@ def write_draft(job, brief, feedback=None, revision_of=None):
                 _record_llm(rec, result, job)
                 contract = result.output
             else:
-                contract = mock.write(qtype, brief, f"{job.pk}-{brief.pk}-{attempt}")
+                ref = brief.pk or f"r{revision_of.pk}"
+                contract = mock.write(qtype, brief, f"{job.pk}-{ref}-{attempt}")
                 rec.provider, rec.output = "mock", contract.model_dump()
         issues = C.check(contract, qtype)
         errors = [i for i in issues if i["level"] == "error"]
