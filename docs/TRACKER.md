@@ -17,7 +17,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | 5 | Analytics | In progress | Skill map, trend sparkline, results history on the student dashboard; Chart.js + filters still to do |
 | 6 | Institute admin | In progress | Org overview, students, student detail, read-only access/invites; invites managed in Django admin |
 | 7 | Payments later (+ polish) | Not started | `Plan*` / `Entitlement` stubs ready |
-| — | Content pipeline (08) | In progress | `content` app: sources → patterns → jobs → drafts → publish; Piper TTS, matplotlib charts, Gemini/R2 adapters, dedup + practice/mock pools + exposure ([08](playbook/08-content-pipeline.md)). Live LLM/Gemini runs need keys |
+| — | Content pipeline (08) | Done | `content` app: sources → patterns → jobs → drafts → publish; Piper TTS, matplotlib charts, Gemini/R2 adapters, dedup + practice/mock pools + exposure ([08](playbook/08-content-pipeline.md)). Admin → student flow browser-tested on mock providers (PR #8). Still to verify with real keys: live LLM agents, Gemini images, embeddings, R2; PDF upload |
 
 ---
 
