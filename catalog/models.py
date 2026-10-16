@@ -99,6 +99,16 @@ class QuestionType(TimeStampedModel):
     default_time_sec = models.PositiveIntegerField(null=True, blank=True)
     ui_schema = models.JSONField(default=dict, blank=True)
     scoring_schema = models.JSONField(default=dict, blank=True)
+    content_schema = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="JSON Schema of the generation contract (content.contracts).",
+    )
+    media_policy = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Media the type needs, e.g. {"stimulus": "audio", "voices": 2}.',
+    )
 
     class Meta:
         ordering = ["exam", "section", "code"]
@@ -136,6 +146,13 @@ class Asset(models.Model):
         PDF = "pdf", "PDF"
         OTHER = "other", "Other"
 
+    class Role(models.TextChoices):
+        STIMULUS_AUDIO = "stimulus_audio", "Stimulus audio"
+        STIMULUS_IMAGE = "stimulus_image", "Stimulus image"
+        SOURCE_DOC = "source_doc", "Source document"
+        RECORDING = "recording", "Student recording"
+        OTHER = "other", "Other"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tenant = models.ForeignKey(
         "tenancy.Tenant",
@@ -145,9 +162,18 @@ class Asset(models.Model):
         related_name="assets",
     )
     kind = models.CharField(max_length=10, choices=Kind.choices)
-    file = models.FileField(upload_to="assets/%Y/%m/")
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.OTHER)
+    file = models.FileField(upload_to="assets/%Y/%m/", max_length=255)
     content_type = models.CharField(max_length=100, blank=True)
     duration_ms = models.PositiveIntegerField(null=True, blank=True)
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
+    sha256 = models.CharField(max_length=64, blank=True, db_index=True)
+    provider = models.CharField(
+        max_length=30, blank=True, help_text="upload, piper, matplotlib, gemini, mock…"
+    )
+    model_name = models.CharField(max_length=100, blank=True)
+    prompt = models.TextField(blank=True)
     meta = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -155,7 +181,64 @@ class Asset(models.Model):
         return f"{self.kind}:{self.file.name}"
 
 
+class Stimulus(TimeStampedModel):
+    """Shared material (passage, listening script, image) behind question sets."""
+
+    class Kind(models.TextChoices):
+        READING_PASSAGE = "reading_passage", "Reading passage"
+        LISTENING_SCRIPT = "listening_script", "Listening script"
+        IMAGE = "image", "Image / chart"
+        SPEAKING_CUE = "speaking_cue", "Speaking cue"
+        WRITING_PROMPT = "writing_prompt", "Writing prompt"
+        TEXT = "text", "Text snippet"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="stimuli")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True, help_text="Passage text or full script.")
+    script = models.JSONField(
+        default=list, blank=True, help_text='Listening turns: [{"speaker", "text"}].'
+    )
+    meta = models.JSONField(default=dict, blank=True)
+    audio = models.ForeignKey(
+        Asset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audio_stimuli",
+    )
+    image = models.ForeignKey(
+        Asset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="image_stimuli",
+    )
+    topic = models.ForeignKey(
+        Tag, on_delete=models.SET_NULL, null=True, blank=True, related_name="stimuli"
+    )
+    content_hash = models.CharField(max_length=64, blank=True, db_index=True)
+
+    class Meta:
+        verbose_name_plural = "stimuli"
+
+    def __str__(self):
+        return self.title
+
+
 class Question(TimeStampedModel):
+    class Origin(models.TextChoices):
+        SEED = "seed", "Seed"
+        MANUAL = "manual", "Manual"
+        GENERATED = "generated", "Generated"
+        IMPORTED = "imported", "Imported"
+
+    class Pool(models.TextChoices):
+        PRACTICE = "practice", "Practice only"
+        MOCK = "mock", "Mock only"
+        BOTH = "both", "Practice and mock (legacy)"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
     question_type = models.ForeignKey(
@@ -189,14 +272,48 @@ class Question(TimeStampedModel):
         related_name="listening_questions",
         help_text="Listening recording played in the attempt player.",
     )
+    stimulus = models.ForeignKey(
+        Stimulus,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="questions",
+        help_text="Shared passage / script / image (optional).",
+    )
+    explanations = models.JSONField(
+        default=dict, blank=True, help_text="Per-item rationale (server only)."
+    )
+    origin = models.CharField(
+        max_length=10, choices=Origin.choices, default=Origin.MANUAL
+    )
+    pool = models.CharField(
+        max_length=10,
+        choices=Pool.choices,
+        default=Pool.BOTH,
+        help_text="Practice questions never appear in mocks and vice versa.",
+    )
+    topic = models.ForeignKey(
+        Tag,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="primary_questions",
+    )
+    subtopic = models.CharField(max_length=120, blank=True)
+    content_hash = models.CharField(max_length=64, blank=True, db_index=True)
+    minhash = models.BinaryField(null=True, blank=True, editable=False)
     is_active = models.BooleanField(default=True)
     version = models.PositiveIntegerField(default=1)
+
+    PRACTICE_POOLS = (Pool.PRACTICE, Pool.BOTH)
+    MOCK_POOLS = (Pool.MOCK, Pool.BOTH)
 
     class Meta:
         indexes = [
             models.Index(
                 fields=["exam", "question_type", "is_active", "is_prediction"]
             ),
+            models.Index(fields=["exam", "question_type", "pool", "is_active"]),
         ]
 
     def __str__(self):
@@ -211,6 +328,8 @@ class Question(TimeStampedModel):
             raise ValidationError(
                 {"question_type": "Question type belongs to a different exam."}
             )
+        if self.stimulus_id and self.exam_id and self.stimulus.exam_id != self.exam_id:
+            raise ValidationError({"stimulus": "Stimulus belongs to a different exam."})
 
 
 class MockPack(TimeStampedModel):
@@ -309,11 +428,29 @@ class MockPackItem(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["pack", "order"], name="uniq_mockpackitem_pack_order"
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["question"], name="uniq_mockpackitem_question"
+            ),
         ]
 
     def __str__(self):
         return f"{self.pack} #{self.order}"
+
+    def clean(self):
+        if not self.question_id:
+            return
+        if self.question.pool == Question.Pool.PRACTICE:
+            raise ValidationError(
+                {"question": "Practice-only questions cannot be used in a mock."}
+            )
+        clash = MockPackItem.objects.filter(question_id=self.question_id)
+        if self.pk:
+            clash = clash.exclude(pk=self.pk)
+        if pack := clash.select_related("pack").first():
+            raise ValidationError(
+                {"question": f"Already used in mock pack “{pack.pack}”."}
+            )
 
 
 class StudyAid(TimeStampedModel):

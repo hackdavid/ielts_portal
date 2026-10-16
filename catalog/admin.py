@@ -9,6 +9,7 @@ from .models import (
     Question,
     QuestionType,
     SectionTiming,
+    Stimulus,
     StudyAid,
     Tag,
 )
@@ -74,6 +75,8 @@ class AssetAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "kind",
+        "role",
+        "provider",
         "file",
         "content_type",
         "duration_ms",
@@ -91,6 +94,8 @@ class QuestionAdmin(admin.ModelAdmin):
         "exam",
         "question_type",
         "difficulty",
+        "pool",
+        "origin",
         "is_prediction",
         "is_active",
         "version",
@@ -99,13 +104,23 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = [
         "exam",
         "question_type__section",
+        "pool",
+        "origin",
         "is_prediction",
         "is_active",
         "difficulty",
     ]
     search_fields = ["title"]
-    autocomplete_fields = ["question_type", "tenant", "tags", "assets", "audio"]
-    readonly_fields = ["id", "created_at", "updated_at"]
+    autocomplete_fields = [
+        "question_type",
+        "tenant",
+        "tags",
+        "assets",
+        "audio",
+        "stimulus",
+        "topic",
+    ]
+    readonly_fields = ["id", "content_hash", "created_at", "updated_at"]
 
 
 class MockPackItemInline(admin.TabularInline):
@@ -138,3 +153,12 @@ class MockPackItemAdmin(admin.ModelAdmin):
     list_filter = ["pack__exam", "section_code"]
     search_fields = ["pack__title", "question__title"]
     autocomplete_fields = ["pack", "question"]
+
+
+@admin.register(Stimulus)
+class StimulusAdmin(admin.ModelAdmin):
+    list_display = ["title", "exam", "kind", "audio", "image", "created_at"]
+    list_filter = ["exam", "kind"]
+    search_fields = ["title", "body"]
+    autocomplete_fields = ["audio", "image", "topic"]
+    readonly_fields = ["id", "content_hash", "created_at", "updated_at"]

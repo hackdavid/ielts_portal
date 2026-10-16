@@ -1,0 +1,33 @@
+<div style="max-width:900px;line-height:1.5">
+  {% if is_mock %}<p style="background:#fee2e2;color:#991b1b;padding:6px 10px;border-radius:6px"><b>MOCK</b> — written by mock providers (no LLM key). Not real content.</p>{% endif %}
+  <h3 style="margin:0 0 6px">Student view</h3>
+  {% if view.image %}<img src="{{ view.image }}" alt="stimulus" style="max-width:100%;max-height:420px;border:1px solid #ddd;border-radius:6px">{% endif %}
+  {% if view.audio %}<p><audio controls preload="none" src="{{ view.audio }}" style="width:100%"></audio></p>{% endif %}
+  {% if view.instructions %}<p><i>{{ view.instructions }}</i></p>{% endif %}
+  {% if view.context %}<p style="white-space:pre-wrap"><b>{{ view.context }}</b></p>{% endif %}
+  {% if view.prompt %}<p style="white-space:pre-wrap">{{ view.prompt }}</p>{% endif %}
+  {% if view.passage %}<div style="white-space:pre-wrap;max-height:320px;overflow:auto;border:1px solid #eee;padding:8px;border-radius:6px">{{ view.passage }}</div>{% endif %}
+  {% if view.data_table %}<table style="margin:8px 0"><tr>{% for c in view.data_table.columns %}<th>{{ c }}</th>{% endfor %}</tr>{% for r in view.data_table.rows %}<tr>{% for v in r %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}</table>{% endif %}
+  {% if view.kind == "inline" %}<p>{% for p in view.parts %}{% if p.blank %}<b>[{{ p.blank.key }}{% if p.blank.options %}: {% for o in p.blank.options %}{{ o.label }}{% if not forloop.last %} / {% endif %}{% endfor %}{% endif %}]</b>{% else %}{{ p.text }}{% endif %}{% endfor %}</p>{% endif %}
+  {% if view.kind == "reorder" %}<ol>{% for p in view.paragraphs %}<li><code>{{ p.id }}</code> {{ p.text }}</li>{% endfor %}</ol>{% endif %}
+  {% if view.kind == "hiw" %}<p>{% for w in view.words %}<span title="{{ w.i }}">{{ w.w }}</span> {% endfor %}</p>{% endif %}
+  {% if view.kind == "speaking" %}{% if view.cue_card %}<div><b>{{ view.cue_card.topic }}</b><ul>{% for p in view.cue_card.points %}<li>{{ p }}</li>{% endfor %}</ul>{{ view.cue_card.explain }}</div>{% endif %}<ol>{% for q in view.questions_list %}<li>{{ q }}</li>{% endfor %}</ol><p>Prep {{ view.prep_sec }} s · record {{ view.record_sec }} s</p>{% endif %}
+  {% if view.kind == "writing" %}<p>Words: {{ view.min_words }}{% if view.max_words %}–{{ view.max_words }}{% endif %}</p>{% endif %}
+  {% if view.questions %}<ol style="padding-left:18px">{% for q in view.questions %}<li value="{{ q.key }}">{{ q.text }}{% if q.options %}<br><small>{% for o in q.options %}{{ o.label }}{% if not forloop.last %} · {% endif %}{% endfor %}</small>{% endif %}</li>{% endfor %}</ol>{% endif %}
+
+  <h3 style="margin:14px 0 6px">Answer key (server only)</h3>
+  <pre style="white-space:pre-wrap;background:#f8fafc;padding:8px;border-radius:6px">{{ answer_key }}</pre>
+  {% if explanations %}<pre style="white-space:pre-wrap;background:#f8fafc;padding:8px;border-radius:6px">{{ explanations }}</pre>{% endif %}
+  {% if transcript %}<details><summary>Transcript / script (server only)</summary><pre style="white-space:pre-wrap">{{ transcript }}</pre></details>{% endif %}
+
+  <h3 style="margin:14px 0 6px">Checks</h3>
+  <ul>
+    {% for i in issues %}<li style="color:{% if i.level == 'error' %}#b91c1c{% else %}#92400e{% endif %}">{{ i.level }} · {{ i.code }} · {{ i.message }}</li>{% empty %}<li style="color:#047857">Validation passed.</li>{% endfor %}
+    <li>Reviewer agreement: <b>{{ review.agreement|default:"–" }}</b>{% if review.mock %} (mock reviewer — no blind solve){% endif %} · quality {{ review.quality|default:"–" }}/5</li>
+    {% for d in review.disagreements %}<li style="color:#b91c1c">Q{{ d.key }}: reviewer “{{ d.reviewer }}” vs key “{{ d.expected }}”</li>{% endfor %}
+    {% for i in review.issues %}<li>{{ i }}</li>{% endfor %}
+    <li>Dedup verdict: <b>{{ verdict }}</b></li>
+    {% for h in hits %}<li>{{ h.get_method_display }} {{ h.score|floatformat:2 }} → {% if h.url %}<a href="{{ h.url }}">{{ h.target_label }}</a>{% else %}{{ h.target_label }}{% endif %} ({{ h.verdict }})</li>{% endfor %}
+  </ul>
+  {% if blockers %}<p style="color:#b91c1c"><b>Publish blocked:</b> {{ blockers|join:" " }}</p>{% else %}<p style="color:#047857"><b>Ready to publish.</b></p>{% endif %}
+</div>

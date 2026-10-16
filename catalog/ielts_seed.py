@@ -104,6 +104,7 @@ def _question(exam, qtypes, data, difficulty):
         defaults={
             "difficulty": difficulty,
             "is_prediction": False,
+            "origin": Question.Origin.SEED,
             "stem": stem,
             "answer_key": {"answers": data["answers"]} if data.get("answers") else {},
             "scorer_meta": {"transcript": data["transcript"]}

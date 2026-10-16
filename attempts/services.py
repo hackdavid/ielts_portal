@@ -4,11 +4,12 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F, OuterRef, Subquery
 from django.utils import timezone
 
-from catalog.models import PracticeMode, QuestionType, Section
+from catalog.models import PracticeMode, Question, QuestionType, Section
 
-from .models import Attempt, AttemptItem
+from .models import Attempt, AttemptItem, QuestionExposure
 
 GRACE_SEC = 5
 DEFAULT_ITEM_SEC = 600
@@ -63,14 +64,58 @@ def _create(request, *, exam, pack, mode, section_code, sections, entries, key):
                 "_engine": question.question_type.engine,
                 "_qtype": question.question_type.name,
                 "_part": part,
-                "_audio": question.audio.file.url if question.audio_id else None,
+                **media_refs(question),
             },
             answer_key_snapshot={**question.answer_key, "_meta": question.scorer_meta},
             time_limit_sec=limit,
         )
         for order, (code, question, limit, part) in enumerate(entries, start=1)
     )
+    record_exposure(request.user, [e[1] for e in entries], mode, now)
     return attempt
+
+
+def media_refs(question):
+    """Asset ids for the player; URLs are resolved at render time (R2 links expire)."""
+    stimulus = question.stimulus
+    audio_id = question.audio_id or (stimulus.audio_id if stimulus else None)
+    image_id = stimulus.image_id if stimulus else None
+    refs = {"_audio_asset": str(audio_id) if audio_id else None}
+    if image_id:
+        refs["_image_asset"] = str(image_id)
+    if stimulus and stimulus.body and "passage" not in question.stem:
+        if stimulus.kind == stimulus.Kind.READING_PASSAGE:
+            refs["passage"] = stimulus.body
+    return refs
+
+
+def record_exposure(user, questions, mode, now):
+    ids = {q.pk for q in questions}
+    seen = set(
+        QuestionExposure.objects.filter(user=user, question_id__in=ids).values_list(
+            "question_id", flat=True
+        )
+    )
+    QuestionExposure.objects.filter(user=user, question_id__in=seen).update(
+        times_seen=F("times_seen") + 1, last_seen_at=now, last_mode=mode
+    )
+    QuestionExposure.objects.bulk_create(
+        [
+            QuestionExposure(user=user, question_id=i, last_seen_at=now, last_mode=mode)
+            for i in ids - seen
+        ],
+        ignore_conflicts=True,
+    )
+
+
+def unseen_first(queryset, user):
+    """Order unseen questions first, then the least recently seen."""
+    last_seen = QuestionExposure.objects.filter(
+        user=user, question=OuterRef("pk")
+    ).values("last_seen_at")[:1]
+    return queryset.annotate(_last_seen=Subquery(last_seen)).order_by(
+        F("_last_seen").asc(nulls_first=True), "title"
+    )
 
 
 def _section_row(code, label, duration, extra=0):
@@ -90,7 +135,9 @@ def start_pack(request, pack, section=None):
     if existing := _resume(request.user, key):
         return existing
     plan = [r for r in pack.section_plan() if not section or r["section"] == section]
-    items = pack.items.select_related("question__question_type", "question__audio")
+    items = pack.items.select_related(
+        "question__question_type", "question__audio", "question__stimulus"
+    )
     by_section = {}
     for item in items.order_by("order"):
         by_section.setdefault(item.section_code, []).append(item)
@@ -148,10 +195,14 @@ def start_questions(request, qtype: QuestionType, questions):
     )
 
 
-def questions_for(qtype, queryset, question_id=None):
-    qs = queryset.filter(question_type=qtype).select_related("question_type", "audio")
+def questions_for(qtype, queryset, question_id=None, user=None):
+    qs = queryset.filter(
+        question_type=qtype, pool__in=Question.PRACTICE_POOLS
+    ).select_related("question_type", "audio", "stimulus")
     if question_id:
         return qs.filter(pk=question_id)
+    if user is not None:
+        return unseen_first(qs, user)
     return qs.order_by("title")
 
 

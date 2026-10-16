@@ -5,7 +5,7 @@ Only stem data is used; answer keys and transcripts never reach this module.
 
 import re
 
-from catalog.models import QuestionType
+from catalog.models import Asset, QuestionType
 
 E = QuestionType.Engine
 LETTER = re.compile(r"^([A-Z]|[ivx]+)$")
@@ -64,6 +64,13 @@ def _inline(text, blanks, saved, bank=None):
     return parts
 
 
+def asset_url(asset_id):
+    if not asset_id:
+        return None
+    asset = Asset.objects.filter(pk=asset_id).only("file").first()
+    return asset.file.url if asset and asset.file else None
+
+
 def build(item):
     stem = item.stem_snapshot or {}
     saved = item.response or {}
@@ -73,7 +80,8 @@ def build(item):
         "engine": engine,
         "qtype": stem.get("_qtype", ""),
         "part": stem.get("_part"),
-        "audio": stem.get("_audio"),
+        "audio": asset_url(stem.get("_audio_asset")) or stem.get("_audio"),
+        "image": asset_url(stem.get("_image_asset")),
         "passage": stem.get("passage"),
         "instructions": stem.get("instructions"),
         "context": stem.get("context"),

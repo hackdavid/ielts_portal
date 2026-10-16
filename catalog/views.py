@@ -27,7 +27,9 @@ def _chip(request, key, value, label):
 
 def practice_sections(exam, request):
     """Question categories grouped by section (exam order) with visible counts."""
-    questions = visible(Question.objects.filter(exam=exam), request)
+    questions = visible(
+        Question.objects.filter(exam=exam, pool__in=Question.PRACTICE_POOLS), request
+    )
     counts = dict(
         questions.values("question_type")
         .annotate(n=Count("id"))
@@ -117,7 +119,12 @@ class QuestionTypeListView(ExamMixin, TemplateView):
         exam = self.get_exam()
         qtype = get_object_or_404(exam.question_types, code=self.kwargs["code"])
         params = self.request.GET
-        questions = visible(Question.objects.filter(question_type=qtype), self.request)
+        questions = visible(
+            Question.objects.filter(
+                question_type=qtype, pool__in=Question.PRACTICE_POOLS
+            ),
+            self.request,
+        )
         if params.get("prediction") == "1":
             questions = questions.filter(is_prediction=True)
         if params.get("difficulty") in {str(i) for i in range(1, 6)}:
@@ -217,7 +224,10 @@ class PracticeStartView(ExamMixin, View):
         question_id = request.POST.get("question") or None
         try:
             questions = questions_for(
-                qtype, visible(Question.objects.all(), request), question_id
+                qtype,
+                visible(Question.objects.all(), request),
+                question_id,
+                user=request.user,
             )
             attempt = start_questions(request, qtype, questions)
         except ValidationError:

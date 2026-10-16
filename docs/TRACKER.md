@@ -17,6 +17,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | 5 | Analytics | In progress | Skill map, trend sparkline, results history on the student dashboard; Chart.js + filters still to do |
 | 6 | Institute admin | In progress | Org overview, students, student detail, read-only access/invites; invites managed in Django admin |
 | 7 | Payments later (+ polish) | Not started | `Plan*` / `Entitlement` stubs ready |
+| — | Content pipeline (08) | In progress | `content` app: sources → patterns → jobs → drafts → publish; Piper TTS, matplotlib charts, Gemini/R2 adapters, dedup + practice/mock pools + exposure ([08](playbook/08-content-pipeline.md)). Live LLM/Gemini runs need keys |
 
 ---
 
@@ -38,6 +39,8 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | Demo data | JSON fixtures | Python definitions in `catalog/demo.py` (`update_or_create`) | Idempotent re-runs; easy to generate 3 questions × every type |
 | Catalogue access | Public browse | Login required for everything | User decision |
 | Frontend API | — | `static/js/api.js` (`window.api`) | Single place for CSRF, auth headers, errors |
+| Shared stimuli | Passage copied into each stem | `catalog.Stimulus` (passage / script / image, one audio per stimulus); stems stay self-contained | Dedup + one recording per listening part |
+| Practice vs mock | Same pool | `Question.pool` + one mock pack per question (`uniq_mockpackitem_question`) | No repeats between practice and mocks |
 
 ---
 

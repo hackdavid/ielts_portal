@@ -131,3 +131,29 @@ class FeedbackNote(TimeStampedModel):
 
     def __str__(self):
         return f"Feedback by {self.author} on {self.attempt_id}"
+
+
+class QuestionExposure(models.Model):
+    """Which questions a student has already been shown (no-repeat selection)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="exposures"
+    )
+    question = models.ForeignKey(
+        "catalog.Question", on_delete=models.CASCADE, related_name="exposures"
+    )
+    first_seen_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField()
+    times_seen = models.PositiveIntegerField(default=1)
+    last_mode = models.CharField(max_length=20, choices=PracticeMode.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "question"], name="uniq_exposure_user_question"
+            )
+        ]
+        indexes = [models.Index(fields=["user", "last_seen_at"])]
+
+    def __str__(self):
+        return f"{self.user} saw {self.question_id} ×{self.times_seen}"

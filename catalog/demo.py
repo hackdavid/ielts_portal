@@ -196,6 +196,7 @@ def seed():
                     defaults={
                         "difficulty": n + 1,
                         "is_prediction": n == 1,
+                        "origin": Question.Origin.SEED,
                         "stem": stem,
                         "answer_key": key,
                         "scorer_meta": meta,
