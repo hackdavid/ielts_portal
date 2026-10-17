@@ -1,4 +1,5 @@
 {% extends "app/base.html" %}
+{% load guide %}
 {% block title %}{{ pack.title }} | IELTS Portal{% endblock %}
 {% block crumbs %}{% with crumb=pack.title %}{% include "catalog/_crumbs.html" %}{% endwith %}{% endblock %}
 {% block content %}
@@ -14,11 +15,16 @@
         {% for s in sections %}
         <li class="flex flex-wrap items-center gap-4 px-5 py-4">
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">{% include "app/_section_icon.html" with code=s.section %}</span>
-          <div class="min-w-0 flex-1"><p class="font-semibold text-ink">{{ s.label }}</p><p class="text-xs text-slate-500">{{ s.sets }} question set{{ s.sets|pluralize }} · {% widthratio s.duration_sec 60 1 %} min{% if s.extra_sec %} + {% widthratio s.extra_sec 60 1 %} min review{% endif %}{% if s.is_override %} <span class="text-amber-700">(custom)</span>{% endif %}</p></div>
+          {% section_guide s.section pack.exam.kind as sg %}<div class="min-w-0 flex-1"><p class="font-semibold text-ink">{{ s.label }}</p>{% if sg %}<p class="mt-0.5 text-sm text-slate-600">{{ sg.format }}</p>{% endif %}<p class="text-xs text-slate-500">{{ s.sets }} question set{{ s.sets|pluralize }} · {% widthratio s.duration_sec 60 1 %} min{% if s.extra_sec %} + {% widthratio s.extra_sec 60 1 %} min review{% endif %}{% if s.is_override %} <span class="text-amber-700">(custom)</span>{% endif %}</p></div>
           {% if not pack.locked and s.sets %}<form method="post" action="{% url 'catalog:mock_start' pack.pk %}">{% csrf_token %}<input type="hidden" name="section" value="{{ s.section }}"><button class="btn-ghost px-3 py-1.5 text-xs" data-testid="practise-section">Practise this section</button></form>{% endif %}
         </li>
         {% endfor %}
       </ol>
+    </div>
+    <div data-animate class="grid gap-4 sm:grid-cols-3">
+      <div class="card p-5"><p class="font-display text-sm font-bold text-ink">Before you start</p><p class="mt-1.5 text-sm text-slate-600">Find a quiet room, use headphones, and set aside the full time. The clock keeps running if you leave.</p></div>
+      <div class="card p-5"><p class="font-display text-sm font-bold text-ink">During the test</p><p class="mt-1.5 text-sm text-slate-600">Flag questions to revisit, highlight the passage and check the navigator before finishing each section.</p></div>
+      <div class="card p-5"><p class="font-display text-sm font-bold text-ink">After you submit</p><p class="mt-1.5 text-sm text-slate-600">See section scores straight away, then review every answer against the key and transcript.</p></div>
     </div>
   </div>
   <aside data-animate class="lg:sticky lg:top-24 lg:self-start">

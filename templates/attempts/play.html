@@ -67,7 +67,7 @@
       <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'questions' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'questions'">Questions</button>
     </div>
     <div class="exam-split flex-1 lg:grid lg:min-h-0" :style="`--split:${split}%`">
-      <article class="exam-pane exam-passage whitespace-pre-line" :class="pane === 'passage' ? 'block' : 'hidden lg:block'" @mouseup="selectText($event)" data-testid="passage">{{ item.passage }}</article>
+      <article class="exam-pane exam-passage" :class="pane === 'passage' ? 'block' : 'hidden lg:block'" @mouseup="selectText($event)" data-testid="passage">{{ item.passage|paragraphs }}</article>
       <div class="exam-divider hidden lg:flex" @pointerdown="drag($event)" role="separator" aria-label="Resize panes"><span></span></div>
       <div class="exam-pane exam-questions" :class="pane === 'questions' ? 'block' : 'hidden lg:block'">
         {% include "attempts/_item_body.html" %}
