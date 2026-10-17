@@ -304,3 +304,12 @@ class ExamShellTests(TestCase):
             reverse("catalog:exam_detail", args=["ielts-academic"])
         )
         self.assertContains(detail, "Band 0–9 in half bands")
+
+
+class ExamGuidePageTests(TestCase):
+    def test_public_exam_guide_lists_formats(self):
+        call_command("seed_demo", stdout=StringIO())
+        response = self.client.get(reverse("pages:exam_guide"))
+        self.assertContains(response, 'data-testid="guide-exam"', count=4)
+        self.assertContains(response, "True / False / Not Given")
+        self.assertContains(response, "Write from Dictation")
