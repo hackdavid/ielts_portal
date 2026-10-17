@@ -254,3 +254,53 @@ class PlayerTests(TestCase):
         attempt, _ = self.start()
         response = self.client.get(reverse("analytics:dashboard"))
         self.assertContains(response, reverse("attempts:play", args=[attempt.pk]))
+
+
+class ExamShellTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_demo", stdout=StringIO())
+        cls.user = User.objects.create(username="x", email="x@example.com")
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def open(self, exam_code, section=None, slug=None):
+        exam = Exam.objects.get(code=exam_code)
+        pack = exam.mock_packs.get(slug=slug) if slug else exam.mock_packs.first()
+        data = {"section": section} if section else {}
+        self.client.post(reverse("catalog:mock_start", args=[pack.pk]), data)
+        attempt = Attempt.objects.filter(user=self.user).latest("created_at")
+        attempt.meta["mic_checked"] = "ok"
+        attempt.save()
+        return self.client.get(reverse("attempts:play", args=[attempt.pk]))
+
+    def test_ielts_listening_has_intro_flags_and_per_question_navigator(self):
+        html = self.open("IELTS_ACADEMIC", "listening", "mock-test-1").content.decode()
+        self.assertIn('data-testid="section-intro"', html)
+        self.assertIn('data-testid="navigator"', html)
+        self.assertIn('data-nav="1:', html)
+        self.assertIn("Flag question", html)
+        self.assertIn("linear: false", html)
+
+    def test_reading_splits_passage_into_paragraphs(self):
+        html = self.open("IELTS_ACADEMIC", "reading", "mock-test-1").content.decode()
+        self.assertIn('data-testid="passage"', html)
+        self.assertIn('<p class="mb-4 last:mb-0">', html)
+        self.assertIn("exam-divider", html)
+
+    def test_pte_full_mock_is_linear(self):
+        html = self.open("PTE_ACADEMIC").content.decode()
+        self.assertIn('data-exam="pte"', html)
+        self.assertIn("linear: true", html)
+
+    def test_catalogue_shows_format_guides(self):
+        html = self.client.get(
+            reverse("catalog:qtype_list", args=["ielts-academic", "R_TFNG"])
+        ).content.decode()
+        self.assertIn('data-testid="qtype-guide"', html)
+        self.assertIn("Not Given", html)
+        detail = self.client.get(
+            reverse("catalog:exam_detail", args=["ielts-academic"])
+        )
+        self.assertContains(detail, "Band 0–9 in half bands")
