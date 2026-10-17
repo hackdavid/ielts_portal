@@ -1,0 +1,2 @@
+<div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full text-sm"><thead class="bg-slate-50"><tr>{% for c in item.data_table.columns %}<th class="px-3 py-2 text-left font-semibold text-slate-600">{{ c }}</th>{% endfor %}</tr></thead>
+<tbody>{% for row in item.data_table.rows %}<tr class="border-t border-slate-100">{% for cell in row %}<td class="px-3 py-2">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
