@@ -74,14 +74,18 @@
       </div>
     </div>
     {% elif item.kind == "writing" and item.prompt %}
+    <div class="sticky top-0 z-10 flex gap-1 border-b border-slate-200 bg-white p-2 lg:hidden" role="tablist" data-testid="writing-tabs">
+      <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'passage' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'passage'">Task</button>
+      <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'questions' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'questions'">Answer</button>
+    </div>
     <div class="exam-split flex-1 lg:grid lg:min-h-0" :style="`--split:${split}%`">
-      <div class="exam-pane">
+      <div class="exam-pane" :class="pane === 'passage' ? 'block' : 'hidden lg:block'">
         <p class="whitespace-pre-line leading-relaxed">{{ item.prompt }}</p>
         {% if item.image %}<img src="{{ item.image }}" alt="Task image" class="mt-4 max-h-[50vh] w-full rounded-xl border border-slate-200 bg-white object-contain" data-testid="stimulus-image">{% endif %}
         {% if item.data_table %}{% include "attempts/_data_table.html" %}{% endif %}
       </div>
       <div class="exam-divider hidden lg:flex" @pointerdown="drag($event)" role="separator" aria-label="Resize panes"><span></span></div>
-      <div class="exam-pane exam-questions">{% include "attempts/items/writing.html" with hide_prompt=True %}</div>
+      <div class="exam-pane exam-questions" :class="pane === 'questions' ? 'block' : 'hidden lg:block'">{% include "attempts/items/writing.html" with hide_prompt=True %}</div>
     </div>
     {% else %}
     <div class="exam-pane exam-single flex-1 lg:min-h-0">

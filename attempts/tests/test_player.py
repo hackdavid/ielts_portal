@@ -289,6 +289,10 @@ class ExamShellTests(TestCase):
         self.assertIn('<p class="mb-4 last:mb-0">', html)
         self.assertIn("exam-divider", html)
 
+    def test_writing_has_phone_task_answer_tabs(self):
+        html = self.open("IELTS_ACADEMIC", "writing", "mock-test-1").content.decode()
+        self.assertIn('data-testid="writing-tabs"', html)
+
     def test_pte_full_mock_is_linear(self):
         html = self.open("PTE_ACADEMIC").content.decode()
         self.assertIn('data-exam="pte"', html)

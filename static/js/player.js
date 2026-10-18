@@ -102,8 +102,10 @@
       },
       keys(e) {
         if (!e.altKey || this.intro || this.confirmOpen) return;
-        if (e.key === "ArrowRight") { e.preventDefault(); this.go(this.idx + 1); }
-        else if (e.key === "ArrowLeft" && !this.linear) { e.preventDefault(); this.go(this.idx - 1); }
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        e.preventDefault();
+        if (e.key === "ArrowRight") this.go(this.idx + 1);
+        else if (!this.linear) this.go(this.idx - 1);
       },
       fullscreen() {
         if (document.fullscreenElement) document.exitFullscreen();
