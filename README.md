@@ -2,6 +2,25 @@
 
 PTE + IELTS practice portal — Django 5.2, Django Templates, Tailwind CSS, Alpine.js, Motion One.
 
+## Quick start: set up and run
+
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/) (no pip needed).
+
+```bash
+git clone https://github.com/hackdavid/ielts_portal.git && cd ielts_portal
+uv run python scripts/setup_demo_data.py   # demo db + media + migrate; skips what's already done
+uv run python manage.py runserver
+```
+
+Open http://127.0.0.1:8000/ and sign in at `/admin/login/`:
+
+| user | password | role |
+|------|----------|------|
+| `admin` | `admin12345` | superuser (`/admin/`) |
+| `student` | `student12345` | student |
+
+Dev-only logins; details in [`data/README.md`](data/README.md). `--force` replaces an existing `db.sqlite3` (backup kept). If `R2_BUCKET_NAME` is set in your shell, run the server as `MEDIA_STORAGE=local uv run python manage.py runserver`.
+
 - Product & engineering playbook: [`docs/playbook/`](docs/playbook/00-README.md)
 - Phase-wise progress: [`docs/TRACKER.md`](docs/TRACKER.md)
 - Auth design (Google via Firebase): [`docs/playbook/07-authentication-firebase.md`](docs/playbook/07-authentication-firebase.md)
@@ -25,9 +44,9 @@ PTE + IELTS practice portal — Django 5.2, Django Templates, Tailwind CSS, Alpi
 | `static/js/api.js` | Central browser API client (`window.api`) — use it for every JSON call |
 | `static/vendor/` | Vendored Alpine.js and Motion One |
 
-## Setup
+## Setup from scratch (empty database)
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/). Uses SQLite (`db.sqlite3`) locally.
+Uses SQLite (`db.sqlite3`) locally.
 
 ```bash
 uv sync
