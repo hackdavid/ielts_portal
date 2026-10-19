@@ -205,3 +205,53 @@
     linear-gradient(#fff, #fff) padding-box,
     linear-gradient(120deg, var(--color-aurora-1), var(--color-aurora-2), var(--color-aurora-3)) border-box;
 }
+
+/* ---------- Exam player shell ---------- */
+@utility exam-icon-btn {
+  @apply grid h-9 w-9 place-items-center rounded-lg text-sm font-bold text-white/80 ring-1 ring-white/15 transition hover:bg-white/10 hover:text-white;
+}
+@utility exam-arrow {
+  @apply grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-ink transition hover:border-ink disabled:cursor-not-allowed disabled:opacity-30;
+}
+@utility exam-arrow-next {
+  @apply border-ink bg-ink text-white hover:bg-ink-2;
+}
+@utility exam-q {
+  @apply grid h-7 min-w-7 place-items-center rounded-md border border-slate-300 bg-white px-1 text-xs font-semibold text-slate-600 transition hover:border-ink;
+}
+@utility exam-input {
+  @apply rounded-xl border border-slate-300 bg-white px-3 py-2 text-[1em] shadow-sm transition focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none;
+}
+@utility exam-option {
+  @apply flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 transition hover:border-slate-400 has-[:checked]:border-ink has-[:checked]:bg-slate-50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand/20;
+}
+@utility exam-option-mark {
+  @apply grid h-5 w-5 shrink-0 place-items-center border-2 border-slate-300 bg-white transition peer-checked:border-ink peer-checked:bg-ink peer-checked:shadow-[inset_0_0_0_3px_white];
+}
+
+@layer components {
+  .exam-topbar { background: linear-gradient(90deg, var(--color-ink), var(--color-ink-2)); }
+  .exam-shell[data-exam="pte"] .exam-topbar { background: linear-gradient(90deg, #0b3b4f, #0f5266); }
+  .exam-banner { background: #fff; border-color: rgb(226 232 240); }
+  .exam-stage { --pane-bg: #f8fafc; }
+  .exam-pane { padding: 1.25rem 1rem 2rem; background: var(--pane-bg); }
+  .exam-passage { background: #fff; line-height: 1.75; }
+  .exam-shell[data-size="sm"] .exam-stage { font-size: 0.875rem; }
+  .exam-shell[data-size="md"] .exam-stage { font-size: 1rem; }
+  .exam-shell[data-size="lg"] .exam-stage { font-size: 1.1875rem; }
+  .exam-passage mark { background: #fde047; color: inherit; border-radius: 2px; padding: 0 1px; }
+  .exam-divider { cursor: col-resize; align-items: center; justify-content: center; background: rgb(226 232 240); }
+  .exam-divider span { width: 4px; height: 40px; border-radius: 9999px; background: rgb(148 163 184); }
+  .exam-divider:hover, .exam-divider:active { background: color-mix(in srgb, var(--brand) 25%, white); }
+  @media (min-width: 1024px) {
+    .exam-split { grid-template-columns: var(--split, 50%) 10px minmax(0, 1fr); }
+    .exam-pane { overflow-y: auto; padding: 1.75rem 2rem 3rem; }
+    .exam-split > .exam-pane, .exam-single { min-height: 0; height: 100%; }
+    .exam-stage > form { position: absolute; inset: 0; }
+  }
+  .exam-shell[data-contrast="cream"] .exam-stage, .exam-shell[data-contrast="cream"] .exam-banner { --pane-bg: #fdf6e3; background-color: #fdf6e3; }
+  .exam-shell[data-contrast="cream"] .exam-passage, .exam-shell[data-contrast="cream"] .exam-question { background-color: #fffbeb; }
+  .exam-shell[data-contrast="dark"] .exam-stage, .exam-shell[data-contrast="dark"] .exam-banner { --pane-bg: #000; background-color: #000; color: #fde047; }
+  .exam-shell[data-contrast="dark"] .exam-stage :is(.exam-passage, .exam-question, .exam-option, .exam-input, .rounded-2xl) { background-color: #000; color: #fde047; border-color: #fde04766; }
+  .exam-shell[data-contrast="dark"] .exam-stage :is(.text-ink, .text-slate-500, .text-slate-600, .text-brand), .exam-shell[data-contrast="dark"] .exam-banner :is(.text-ink, .text-brand, .text-slate-500) { color: #fde047; }
+}

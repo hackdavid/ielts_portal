@@ -2,29 +2,38 @@
 {% block title %}Review | {{ attempt.exam.name }}{% endblock %}
 {% block crumbs %}<a class="hover:text-brand" href="{% url 'attempts:done' attempt.pk %}">Results</a> / Answer review{% endblock %}
 {% block content %}
-<section class="mx-auto max-w-4xl space-y-4" data-testid="review">
+<section class="mx-auto max-w-4xl space-y-4" data-testid="review" x-data="{ f: 'all' }">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h1 class="font-display text-3xl font-extrabold tracking-tight text-ink">Answer review</h1>
     <a href="{% url 'attempts:done' attempt.pk %}" class="btn-ghost">Back to results</a>
   </div>
   {% include "components/disclaimer.html" %}
+  <div class="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-sm backdrop-blur" role="tablist" aria-label="Filter answers">
+    <button type="button" class="rounded-xl px-4 py-2 text-sm font-semibold" :class="f === 'all' ? 'bg-ink text-white' : 'text-slate-500 hover:text-ink'" @click="f = 'all'">All ({{ items|length }})</button>
+    <button type="button" class="rounded-xl px-4 py-2 text-sm font-semibold" :class="f === 'wrong' ? 'bg-red-600 text-white' : 'text-slate-500 hover:text-ink'" @click="f = 'wrong'" data-testid="filter-wrong">Needs work</button>
+    <button type="button" class="rounded-xl px-4 py-2 text-sm font-semibold" :class="f === 'right' ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-ink'" @click="f = 'right'">Full marks</button>
+  </div>
   {% for it in items %}
-  <article class="card p-6" data-testid="review-item">
+  {% if it.score.max_raw and it.score.raw == it.score.max_raw %}{% firstof "right" as state %}{% else %}{% firstof "wrong" as state %}{% endif %}
+  <article class="card overflow-hidden p-0" data-testid="review-item" data-state="{{ state }}" x-show="f === 'all' || f === '{{ state }}'">
+    <div class="h-1 {% if state == 'right' %}bg-emerald-500{% elif it.score.raw %}bg-amber-400{% else %}bg-red-500{% endif %}"></div>
+    <div class="p-6">
     <header class="flex flex-wrap items-baseline justify-between gap-2">
-      <h2 class="font-display font-bold text-ink">{{ it.order }}. {{ it.title }}</h2>
-      <p class="text-sm text-slate-500">{{ it.section }} · {{ it.qtype }} · {% if it.score.band is not None %}Band {{ it.score.band }}{% else %}{{ it.score.raw|floatformat:"-1" }} / {{ it.score.max_raw|floatformat:"-1" }}{% endif %}</p>
+      <div><p class="text-xs font-semibold tracking-wide text-brand uppercase">{{ it.section }} · {{ it.qtype }}</p><h2 class="mt-1 font-display font-bold text-ink">{{ it.order }}. {{ it.title }}</h2></div>
+      <p class="rounded-xl px-3 py-1.5 font-display text-sm font-bold {% if state == 'right' %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-ink{% endif %}">{% if it.score.band is not None %}Band {{ it.score.band }}{% else %}{{ it.score.raw|floatformat:"-1" }} / {{ it.score.max_raw|floatformat:"-1" }}{% endif %}</p>
     </header>
     {% if it.details %}
-    <table class="mt-3 w-full text-left text-sm">
-      <thead class="text-xs uppercase text-slate-500"><tr><th class="py-1 pr-3">Question</th><th class="py-1 pr-3">Your answer</th><th class="py-1 pr-3">Correct answer</th><th class="py-1"></th></tr></thead>
-      <tbody>{% for d in it.details %}<tr class="border-t border-slate-100 align-top"><td class="py-1.5 pr-3">{{ d.label }}</td><td class="py-1.5 pr-3">{{ d.given }}</td><td class="py-1.5 pr-3 font-medium">{{ d.expected }}</td><td class="py-1.5">{% if d.correct %}<span class="grid h-6 w-6 place-items-center rounded-full bg-emerald-50 text-emerald-600" aria-label="Correct">✓</span>{% else %}<span class="grid h-6 w-6 place-items-center rounded-full bg-red-50 text-red-600" aria-label="Incorrect">✗</span>{% endif %}</td></tr>{% endfor %}</tbody>
-    </table>
+    <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200"><table class="w-full text-left text-sm">
+      <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-3 py-2">Question</th><th class="px-3 py-2">Your answer</th><th class="px-3 py-2">Correct answer</th><th class="px-3 py-2"></th></tr></thead>
+      <tbody>{% for d in it.details %}<tr class="border-t border-slate-100 align-top {% if not d.correct %}bg-red-50/40{% endif %}"><td class="px-3 py-2 font-semibold text-slate-500">{{ d.label }}</td><td class="px-3 py-2 {% if not d.correct %}text-red-700 line-through decoration-red-300{% endif %}">{{ d.given|default:"—" }}</td><td class="px-3 py-2 font-medium text-emerald-700">{{ d.expected }}</td><td class="px-3 py-2">{% if d.correct %}<span class="grid h-6 w-6 place-items-center rounded-full bg-emerald-50 text-emerald-600" aria-label="Correct">✓</span>{% else %}<span class="grid h-6 w-6 place-items-center rounded-full bg-red-50 text-red-600" aria-label="Incorrect">✗</span>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
     {% endif %}
     {% if it.text is not None %}<details class="mt-3"><summary class="cursor-pointer text-sm font-semibold">Your answer ({{ it.score.words }} words)</summary><p class="mt-2 whitespace-pre-line text-sm text-slate-700">{{ it.text|default:"(empty)" }}</p></details>{% endif %}
     {% if it.recording %}<audio class="mt-3 w-full" controls preload="none" src="{{ it.recording }}"></audio>{% endif %}
     {% if it.traits %}<dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">{% for name, value in it.traits.items %}<div class="flex justify-between rounded-xl bg-slate-50 px-3 py-2"><dt>{{ name }}</dt><dd class="font-semibold">{{ value }}</dd></div>{% endfor %}</dl>{% endif %}
     {% if it.flags %}<p class="mt-2 text-xs text-amber-700">{% for f in it.flags %}{% if f == "unanswered" %}Not answered{% elif f == "under_length" %}Under the word count{% elif f == "no_recording" %}No recording{% elif f == "empty" %}Empty answer{% elif f == "short_recording" %}Very short recording{% elif f == "form_out_of_range" %}Outside the word range{% else %}{{ f }}{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
-    {% if it.transcript %}<details class="mt-3"><summary class="cursor-pointer text-sm font-semibold">Listening script</summary><p class="mt-2 text-sm text-slate-700">{{ it.transcript }}</p></details>{% endif %}
+    {% if it.transcript %}<details class="mt-4 rounded-xl bg-slate-50 p-3"><summary class="cursor-pointer text-sm font-semibold text-ink">Listening script</summary><p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">{{ it.transcript }}</p></details>{% endif %}
+    </div>
   </article>
   {% endfor %}
 </section>

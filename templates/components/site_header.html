@@ -4,6 +4,7 @@
     <nav class="hidden items-center gap-1 lg:flex" aria-label="Main">
       <a class="nav-link" href="{% url 'pages:home' %}#how">How it works</a>
       <a class="nav-link" href="{% url 'pages:home' %}#exams">Exams</a>
+      <a class="nav-link" href="{% url 'pages:exam_guide' %}">Exam guide</a>
       <a class="nav-link" href="{% url 'pages:institutes' %}">For institutes</a>
       <a class="nav-link" href="{% url 'pages:about' %}">About</a>
       <a class="nav-link" href="{% url 'pages:contact' %}">Contact</a>
@@ -24,6 +25,7 @@
   <nav x-cloak x-show="menu" x-transition.opacity class="border-t border-slate-200/70 bg-white px-4 py-3 lg:hidden" aria-label="Mobile">
     <a class="side-link" href="{% url 'pages:home' %}#how" @click="menu = false">How it works</a>
     <a class="side-link" href="{% url 'pages:home' %}#exams" @click="menu = false">Exams</a>
+    <a class="side-link" href="{% url 'pages:exam_guide' %}">Exam guide</a>
     <a class="side-link" href="{% url 'pages:institutes' %}">For institutes</a>
     <a class="side-link" href="{% url 'pages:about' %}">About</a>
     <a class="side-link" href="{% url 'pages:contact' %}">Contact</a>

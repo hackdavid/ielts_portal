@@ -159,3 +159,38 @@ class InstitutesView(TemplateView):
 
 class ContactView(TemplateView):
     template_name = "pages/contact.html"
+
+
+class ExamGuideView(TemplateView):
+    template_name = "pages/exam_guide.html"
+
+    def get_context_data(self, **kwargs):
+        from catalog import guide
+        from catalog.models import Exam
+
+        exams = []
+        for exam in Exam.objects.prefetch_related("question_types").order_by(
+            "kind", "pk"
+        ):
+            sections = {}
+            for qt in exam.question_types.order_by("section", "pk"):
+                row = sections.setdefault(
+                    qt.section,
+                    {
+                        "code": qt.section,
+                        "label": qt.get_section_display(),
+                        "guide": guide.section_guide(qt.section, exam.kind),
+                        "qtypes": [],
+                    },
+                )
+                row["qtypes"].append(
+                    {"name": qt.name, "guide": guide.qtype_guide(qt.code)}
+                )
+            exams.append(
+                {
+                    "exam": exam,
+                    "guide": guide.exam_guide(exam),
+                    "sections": sections.values(),
+                }
+            )
+        return super().get_context_data(exams=exams, **kwargs)

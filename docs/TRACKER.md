@@ -14,6 +14,7 @@ Update the checkboxes and the status table in the same PR that delivers the work
 | 3 | Take mock (dummy) | Done | Player, server-side section timers, autosave, speaking upload, listening play rules |
 | 4 | Scoring stubs | Done | Deterministic + stand-in AI scoring, results, answer review, re-score |
 | UX | Premium redesign | Done | Design system, public/student/org app shells, rule-based "Your next step" ([design.md](design.md)) |
+| UX 2 | Real-exam player + content | In progress | CBT-style exam shell (navigator, flags, section intros, split panes, highlighter, text size/contrast, one-play audio, PTE fixed order), catalogue format guides, results/review filters, public exam guide. Dashboard, org and auth pages still to polish |
 | 5 | Analytics | In progress | Skill map, trend sparkline, results history on the student dashboard; Chart.js + filters still to do |
 | 6 | Institute admin | In progress | Org overview, students, student detail, read-only access/invites; invites managed in Django admin |
 | 7 | Payments later (+ polish) | Not started | `Plan*` / `Entitlement` stubs ready |
@@ -170,6 +171,17 @@ Update the checkboxes and the status table in the same PR that delivers the work
 - [x] Student: dashboard with rule-based "Your next step", catalogue, mocks, unlock, player, results, review, results history
 - [x] Org: overview, students, student detail, access & invites
 - [ ] Replace rule-based `next_step()` with the AI question picker
+
+## UX 2 — Real-exam player and content
+
+- [x] Full-screen exam shell (`attempts/exam_base.html`): server timer with amber/red warnings and time bar, save status, full screen
+- [x] Section intro screen (timing, rules, tip) and finish summary (answered / unanswered / flagged with jump links)
+- [x] Bottom navigator grouped by part; flag for review; Alt + arrow keys; PTE full mocks fixed order with no grid
+- [x] IELTS Reading and Writing split panes with draggable divider; Passage/Questions tabs on phones; passage highlighter
+- [x] Text size and contrast (standard, cream, high contrast) saved per browser
+- [x] Format and question-type guidance (`catalog/guide.py`) on exam, question-type and mock pages, results tips, public `/exam-guide/`
+- [x] Answer review filters (needs work / full marks) and clearer right/wrong rows
+- [ ] Dashboard, institute console and auth/onboarding polish
 
 ## Phase 5 — Analytics
 

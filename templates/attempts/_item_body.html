@@ -1,0 +1,8 @@
+<div class="space-y-5">
+  {% if item.audio %}{% include "components/audio_player.html" %}{% elif section.section == "listening" %}
+  <p class="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600" data-testid="no-audio">Audio for this part hasn't been uploaded yet.</p>{% endif %}
+  {% if item.image %}<img src="{{ item.image }}" alt="Question image" class="max-h-[60vh] w-full rounded-2xl border border-slate-200 bg-white object-contain" data-testid="stimulus-image">{% endif %}
+  {% if item.passage and not reading_split %}<article class="exam-passage rounded-2xl border border-slate-200 bg-white p-5 leading-relaxed" @mouseup="selectText($event)">{% load guide %}{{ item.passage|paragraphs }}</article>{% endif %}
+  {% if item.context %}<p class="whitespace-pre-line rounded-2xl border border-slate-200 bg-white p-4 font-semibold text-ink">{{ item.context }}</p>{% endif %}
+  {% include "attempts/items/"|add:item.kind|add:".html" %}
+</div>

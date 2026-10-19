@@ -1,4 +1,5 @@
 {% extends "app/base.html" %}
+{% load guide %}
 {% block title %}{{ qtype.name }} | {{ exam.name }}{% endblock %}
 {% block crumbs %}{% with crumb=qtype.name %}{% include "catalog/_crumbs.html" %}{% endwith %}{% endblock %}
 {% block content %}
@@ -6,10 +7,16 @@
   <div>
     <p class="eyebrow">{{ qtype.get_section_display }}</p>
     <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">{{ qtype.name }}</h1>
-    <p class="mt-2 text-sm text-slate-500">{{ questions|length }} question{{ questions|length|pluralize }}{% if qtype.default_time_sec %} · {{ qtype.default_time_sec }}s per question{% endif %}</p>
+    <p class="mt-2 text-sm text-slate-500">{{ questions|length }} question{{ questions|length|pluralize }}{% if qtype.default_time_sec %} · about {{ qtype.default_time_sec|minutes }} min per question{% endif %}</p>
   </div>
   {% if questions %}<form method="post" action="{% url 'catalog:practice_start' exam.slug qtype.code %}">{% csrf_token %}<button class="btn-primary btn-lg" data-testid="practice-all">{% include "components/icon.html" with name="play" cls="h-4 w-4" %}Practise all {{ qtype.name }} questions</button></form>{% endif %}
 </div>
+{% with g=qtype.code|qtype_guide %}{% if g %}
+<div data-animate class="mb-6 grid gap-4 md:grid-cols-2" data-testid="qtype-guide">
+  <div class="card p-5"><p class="flex items-center gap-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">{% include "components/icon.html" with name="book" cls="h-4 w-4 text-brand" %}What you do</p><p class="mt-2 text-ink">{{ g.what }}</p></div>
+  <div class="card border-brand/20 bg-brand/5 p-5"><p class="flex items-center gap-2 text-xs font-semibold tracking-wide text-brand uppercase">{% include "components/icon.html" with name="spark" cls="h-4 w-4" %}Examiner tip</p><p class="mt-2 text-ink">{{ g.tip }}</p></div>
+</div>
+{% endif %}{% endwith %}
 <div data-animate class="flex flex-wrap items-center gap-2" data-testid="filters">
   {% with chip=prediction_chip %}{% include "catalog/_chip.html" %}{% endwith %}
   <span class="mx-1 h-5 w-px bg-slate-300"></span>

@@ -1,21 +1,27 @@
-<div class="space-y-3">
-  {% if item.prompt %}<p class="rounded-xl bg-slate-50 p-4">{{ item.prompt }}</p>{% endif %}
+<div class="space-y-4">
+  {% if item.prompt %}<p class="rounded-2xl border border-slate-200 bg-white p-5 leading-relaxed">{{ item.prompt }}</p>{% endif %}
   {% if item.cue_card %}
-  <div class="rounded-xl border-2 border-dashed border-slate-300 p-4">
-    <p class="font-semibold">{{ item.cue_card.topic }}</p><p class="mt-2 text-sm">You should say:</p>
-    <ul class="ml-5 list-disc text-sm">{% for p in item.cue_card.points %}<li>{{ p }}</li>{% endfor %}</ul>
-    {% if item.cue_card.explain %}<p class="mt-1 text-sm">{{ item.cue_card.explain }}</p>{% endif %}
+  <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6 shadow-sm">
+    <p class="text-[11px] font-semibold tracking-[0.16em] text-brand uppercase">Cue card</p>
+    <p class="mt-2 font-display text-lg font-bold text-ink">{{ item.cue_card.topic }}</p><p class="mt-3 text-sm font-semibold">You should say:</p>
+    <ul class="mt-1 ml-5 list-disc space-y-1 text-sm">{% for p in item.cue_card.points %}<li>{{ p }}</li>{% endfor %}</ul>
+    {% if item.cue_card.explain %}<p class="mt-2 text-sm">{{ item.cue_card.explain }}</p>{% endif %}
   </div>
   {% endif %}
-  {% if item.questions_list %}<ol class="ml-5 list-decimal space-y-1">{% for q in item.questions_list %}<li>{{ q }}</li>{% endfor %}</ol>{% endif %}
+  {% if item.questions_list %}<ol class="space-y-2">{% for q in item.questions_list %}<li class="flex gap-3 rounded-xl border border-slate-200 bg-white p-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-slate-100 text-xs font-bold">{{ forloop.counter }}</span>{{ q }}</li>{% endfor %}</ol>{% endif %}
   <div x-data="recorder({ attempt: '{{ attempt.pk }}', order: {{ item.order }}, prep: {{ item.prep_sec }}, max: {{ item.record_sec }}, existing: {{ item.has_recording|yesno:'true,false' }}, url: '{% url 'attempts:recording' attempt.pk item.order %}' })"
-       class="rounded-xl bg-slate-50 p-4" data-testid="recorder">
-    <p class="text-sm font-semibold" x-text="label" data-testid="recorder-state"></p>
-    <div class="mt-3 flex flex-wrap items-center gap-2">
-      <button type="button" class="rounded-lg bg-brand px-4 py-2 font-semibold text-brand-fg" x-show="state === 'idle' || state === 'ready' || state === 'error'" @click="start()" x-text="state === 'idle' ? 'Start recording' : 'Re-record'" data-testid="record"></button>
-      <button type="button" class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white" x-show="state === 'recording'" @click="stop()" data-testid="stop">Stop</button>
-      <span class="font-mono" x-show="state === 'preparing' || state === 'recording'" x-text="countdown + 's'"></span>
+       class="rounded-2xl border border-slate-200 bg-white p-6 text-center" data-testid="recorder"{% if item.has_recording %} data-recorded="1"{% endif %}>
+    <div class="relative mx-auto grid h-24 w-24 place-items-center">
+      <span class="absolute inset-0 rounded-full" :class="state === 'recording' ? 'animate-ping bg-red-400/30' : state === 'preparing' ? 'animate-pulse bg-amber-300/30' : ''"></span>
+      <span class="relative grid h-20 w-20 place-items-center rounded-full text-white shadow-lg" :class="state === 'recording' ? 'bg-red-600' : state === 'preparing' ? 'bg-amber-500' : state === 'ready' ? 'bg-emerald-600' : 'bg-ink'">{% include "components/icon.html" with name="mic" cls="h-8 w-8" %}</span>
     </div>
-    <audio x-show="playback" :src="playback" controls class="mt-3 w-full" data-testid="playback"></audio>
+    <p class="mt-4 font-semibold text-ink" x-text="label" data-testid="recorder-state"></p>
+    <p class="mt-1 font-mono text-3xl font-bold tabular-nums text-ink" x-show="state === 'preparing' || state === 'recording'" x-text="countdown + 's'"></p>
+    <p class="mt-1 text-xs text-slate-500" x-show="state === 'idle'">{% if item.prep_sec %}{{ item.prep_sec }}s to prepare, then {% endif %}up to {{ item.record_sec }}s to speak.</p>
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+      <button type="button" class="btn-primary" x-show="state === 'idle' || state === 'ready' || state === 'error'" @click="start()" x-text="state === 'idle' ? 'Start recording' : 'Re-record'" data-testid="record"></button>
+      <button type="button" class="btn bg-red-600 text-white hover:bg-red-700" x-show="state === 'recording'" @click="stop()" data-testid="stop">Stop recording</button>
+    </div>
+    <audio x-show="playback" :src="playback" controls class="mx-auto mt-4 w-full max-w-md" data-testid="playback"></audio>
   </div>
 </div>

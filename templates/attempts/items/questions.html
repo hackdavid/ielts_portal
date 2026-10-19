@@ -1,22 +1,23 @@
 <ol class="space-y-3">
   {% for q in item.questions %}
-  <li class="flex flex-col gap-2 rounded-lg border border-slate-100 p-3 sm:flex-row sm:items-start" data-testid="question">
-    {% if q.label %}<span class="w-8 shrink-0 font-bold text-slate-500">{{ q.label }}</span>{% endif %}
-    <div class="flex-1 space-y-2">
-      {% if q.text %}<p>{{ q.text }}</p>{% endif %}
+  <li id="q-{{ item.order }}-{{ q.key }}" class="exam-question group flex gap-3 rounded-2xl border bg-white p-4 transition" :class="flags['{{ item.order }}:{{ q.key }}'] ? 'border-amber-300 ring-2 ring-amber-200' : 'border-slate-200'" data-testid="question">
+    <span class="grid h-8 min-w-8 shrink-0 place-items-center rounded-lg px-1.5 text-sm font-bold" :class="answered['{{ item.order }}:{{ q.key }}'] ? 'bg-ink text-white' : 'bg-slate-100 text-slate-600'">{% firstof q.label forloop.counter %}</span>
+    <div class="min-w-0 flex-1 space-y-2.5">
+      {% if q.text %}<p class="leading-relaxed text-ink">{{ q.text }}</p>{% endif %}
       {% if q.kind == "text" %}
-      <input type="text" name="{{ q.key }}" value="{{ q.value }}" autocomplete="off" class="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-1.5" aria-label="Answer {{ q.label }}">
-      {% if q.word_limit %}<span class="ml-2 text-xs text-slate-500">max {{ q.word_limit }} word{{ q.word_limit|pluralize }}</span>{% endif %}
+      <div class="flex flex-wrap items-center gap-2"><input type="text" name="{{ q.key }}" value="{{ q.value }}" autocomplete="off" spellcheck="false" class="exam-input w-full max-w-xs" aria-label="Answer {{ q.label }}">
+      {% if q.word_limit %}<span class="text-xs text-slate-500">max {{ q.word_limit }} word{{ q.word_limit|pluralize }}</span>{% endif %}</div>
       {% elif q.kind == "select" %}
-      <select name="{{ q.key }}" class="rounded-lg border border-slate-300 px-3 py-1.5" aria-label="Answer {{ q.label }}">
-        <option value="">—</option>{% for o in q.options %}<option value="{{ o.value }}"{% if o.checked %} selected{% endif %}>{{ o.label }}</option>{% endfor %}
+      <select name="{{ q.key }}" class="exam-input w-full max-w-md" aria-label="Answer {{ q.label }}">
+        <option value="">Choose an answer</option>{% for o in q.options %}<option value="{{ o.value }}"{% if o.checked %} selected{% endif %}>{{ o.label }}</option>{% endfor %}
       </select>
       {% else %}
-      <div class="flex flex-col gap-1">{% for o in q.options %}
-        <label class="flex items-center gap-2"><input type="{{ q.kind }}" name="{{ q.key }}" value="{{ o.value }}"{% if o.checked %} checked{% endif %}{% if q.kind == "checkbox" %} data-multi{% endif %}> {{ o.label }}</label>{% endfor %}
+      <div class="grid gap-2">{% for o in q.options %}
+        <label class="exam-option"><input type="{{ q.kind }}" name="{{ q.key }}" value="{{ o.value }}" class="peer sr-only"{% if o.checked %} checked{% endif %}{% if q.kind == "checkbox" %} data-multi{% endif %}><span class="exam-option-mark {% if q.kind == 'checkbox' %}rounded-md{% else %}rounded-full{% endif %}"></span><span>{{ o.label }}</span></label>{% endfor %}
       </div>
       {% endif %}
     </div>
+    <button type="button" class="h-8 shrink-0 rounded-lg px-2 text-slate-300 transition hover:text-amber-500" :class="flags['{{ item.order }}:{{ q.key }}'] && '!text-amber-500'" @click="toggleFlag('{{ item.order }}:{{ q.key }}')" aria-label="Flag question {% firstof q.label forloop.counter %} for review" title="Flag for review">{% include "components/icon.html" with name="flag" cls="h-4 w-4" %}</button>
   </li>
   {% endfor %}
 </ol>

@@ -1,66 +1,200 @@
-{% extends "app/focus.html" %}
-{% load static %}
+{% extends "attempts/exam_base.html" %}
+{% load static guide %}
 {% block title %}{{ section.label }} | {{ attempt.exam.name }}{% endblock %}
 {% block extra_head %}<script defer src="{% static 'js/player.js' %}"></script>{% endblock %}
-{% block focus_title %}{{ attempt.exam.name }} · {{ attempt.get_mode_display }}{% endblock %}
 {% block content %}
 {{ clock|json_script:"player-clock" }}
-<section x-data="player({ attempt: '{{ attempt.pk }}', count: {{ items|length }} })" x-init="init()" class="space-y-4" data-testid="player">
-  <div class="sticky top-2 z-10 backdrop-blur-xl flex flex-wrap items-center justify-between gap-3 card px-5 py-3 shadow-sm">
-    <div>
-      <p class="text-xs uppercase tracking-wide text-slate-500">{{ attempt.exam.name }} · {{ attempt.get_mode_display }}{% if attempt.pack %} · {{ attempt.pack.title }}{% endif %}</p>
-      <p class="font-semibold" data-testid="section-name">{{ section.label }} <span class="text-sm font-normal text-slate-500">· section {{ section_index|add:1 }} of {{ sections|length }}</span></p>
-    </div>
-    <div class="flex items-center gap-4">
-      <span class="text-sm text-slate-500" data-testid="item-index">Set <span x-text="idx + 1"></span>/{{ items|length }}</span>
-      <span class="text-xs" :class="saveError ? 'text-red-600' : 'text-slate-500'" x-text="saveLabel" data-testid="save-status"></span>
-      <span role="timer" aria-live="polite" class="rounded-lg px-3 py-1 font-mono text-lg font-bold"
-            :class="remaining <= 10 ? 'bg-red-600 text-white' : remaining <= 60 ? 'bg-amber-100 text-amber-900' : 'bg-slate-100'"
-            x-text="clockText" data-testid="timer"></span>
-    </div>
-  </div>
-  <p x-show="warning" x-cloak x-transition class="rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-900" x-text="warning" data-testid="timer-warning"></p>
+{% section_guide section.section attempt.exam.kind as sg %}
+<section x-data="player({ attempt: '{{ attempt.pk }}', count: {{ items|length }}, total: {{ section.total_sec|default:section.duration_sec|default:0 }}, section: '{{ section.section }}', linear: {% if attempt.exam.kind == 'pte' and attempt.mode == 'full_mock' %}true{% else %}false{% endif %} })"
+         x-init="init()" @keydown.window="keys($event)"
+         class="exam-shell flex min-h-dvh flex-col lg:h-dvh" data-exam="{{ attempt.exam.kind }}" :data-size="size" :data-contrast="contrast" data-testid="player">
 
+  {# ---------- Top bar ---------- #}
+  <header class="exam-topbar relative z-20 shrink-0 text-white">
+    <div class="flex h-14 items-center gap-3 px-3 sm:px-5">
+      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 ring-1 ring-white/15">{% include "app/_section_icon.html" with code=section.section %}</span>
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-[11px] font-semibold tracking-[0.14em] text-white/60 uppercase">{{ attempt.exam.name }} · {{ attempt.get_mode_display }}{% if attempt.pack %} · {{ attempt.pack.title }}{% endif %}</p>
+        <p class="truncate font-display text-sm font-bold sm:text-base" data-testid="section-name">{{ section.label }} <span class="font-sans text-xs font-normal text-white/60">· section {{ section_index|add:1 }} of {{ sections|length }}</span></p>
+      </div>
+      <p class="hidden items-center gap-2 text-xs text-white/70 xl:flex">{% include "components/icon.html" with name="users" cls="h-4 w-4" %}<span class="max-w-[14rem] truncate">{{ user.get_full_name|default:user.email }}</span></p>
+      <span class="hidden text-xs sm:inline" :class="saveError ? 'text-red-300' : 'text-white/60'" x-text="saveLabel" data-testid="save-status"></span>
+      <div class="flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-base font-bold tabular-nums ring-1 transition sm:text-lg"
+           :class="remaining <= 10 ? 'bg-red-600 ring-red-400 animate-pulse' : remaining <= 300 ? 'bg-amber-400 text-ink ring-amber-300' : 'bg-white/10 ring-white/15'">
+        {% include "components/icon.html" with name="clock" cls="h-4 w-4" %}<span role="timer" aria-live="off" aria-label="Time left" x-text="clockText" data-testid="timer"></span>
+      </div>
+      <div class="relative" @click.outside="menu = false">
+        <button type="button" class="exam-icon-btn" @click="menu = !menu" aria-label="Display settings" data-testid="settings">{% include "components/icon.html" with name="settings" cls="h-5 w-5" %}</button>
+        <div x-show="menu" x-cloak x-transition.origin.top.right class="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 shadow-2xl">
+          <p class="text-xs font-semibold tracking-wide text-slate-500 uppercase">Text size</p>
+          <div class="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1">
+            <template x-for="s in ['sm','md','lg']"><button type="button" class="rounded-lg py-1.5 font-semibold" :class="size === s ? 'bg-white shadow text-ink' : 'text-slate-500'" @click="setPref('size', s)" :style="`font-size:${ {sm:13,md:15,lg:18}[s] }px`">A</button></template>
+          </div>
+          <p class="mt-4 text-xs font-semibold tracking-wide text-slate-500 uppercase">Colours</p>
+          <div class="mt-2 grid grid-cols-3 gap-2">
+            <button type="button" class="rounded-lg border-2 bg-white py-2 text-xs font-semibold text-ink" :class="contrast === 'standard' ? 'border-brand' : 'border-slate-200'" @click="setPref('contrast','standard')">Standard</button>
+            <button type="button" class="rounded-lg border-2 bg-amber-50 py-2 text-xs font-semibold text-ink" :class="contrast === 'cream' ? 'border-brand' : 'border-slate-200'" @click="setPref('contrast','cream')">Cream</button>
+            <button type="button" class="rounded-lg border-2 bg-black py-2 text-xs font-semibold text-yellow-300" :class="contrast === 'dark' ? 'border-brand' : 'border-slate-200'" @click="setPref('contrast','dark')">High</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="exam-icon-btn hidden sm:grid" @click="help = true" aria-label="Help" data-testid="help">?</button>
+      <button type="button" class="exam-icon-btn hidden md:grid" @click="fullscreen()" aria-label="Full screen">{% include "components/icon.html" with name="eye" cls="h-5 w-5" %}</button>
+    </div>
+    <div class="h-1 bg-white/10"><div class="h-full bg-gradient-to-r from-aurora-3 to-aurora-1 transition-[width] duration-1000" :style="`width:${timePct}%`"></div></div>
+  </header>
+
+  <p x-show="warning" x-cloak x-transition class="shrink-0 bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900" role="status" x-text="warning" data-testid="timer-warning"></p>
+
+  {# ---------- Item panes ---------- #}
+  <div class="exam-stage relative flex-1 lg:min-h-0">
   {% for item in items %}
   <form data-item="{{ item.order }}" x-show="idx === {{ forloop.counter0 }}" @submit.prevent
-        @input="queue({{ item.order }}, $el)" @change="queue({{ item.order }}, $el)"
-        class="card p-5 shadow-sm {% if reading_split and item.passage %}grid gap-6 lg:grid-cols-2{% endif %}" data-testid="item">
-    {% if reading_split and item.passage %}
-    <article class="max-h-[70vh] overflow-auto whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-relaxed" data-testid="passage">{{ item.passage }}</article>
-    {% endif %}
-    <div class="space-y-4">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-brand">{{ item.qtype }}{% if item.part %} · Part {{ item.part }}{% endif %}</p>
-        {% if item.instructions %}<p class="mt-1 font-medium">{{ item.instructions }}</p>{% endif %}
+        @input="queue({{ item.order }}, $el)" @change="queue({{ item.order }}, $el)" @answered="mark($el)"
+        class="flex h-full flex-col" data-testid="item">
+    <div class="exam-banner shrink-0 border-b px-4 py-3 sm:px-6">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span class="rounded-md bg-ink px-2 py-0.5 text-[11px] font-bold tracking-wide text-white uppercase">{% if item.part %}Part {{ item.part }}{% else %}Task {{ forloop.counter }}{% endif %}</span>
+        <p class="text-xs font-semibold tracking-wide text-brand uppercase">{{ item.qtype }}</p>
+        <span class="ml-auto text-xs text-slate-500" data-testid="item-index">Set <span x-text="idx + 1"></span>/{{ items|length }}</span>
       </div>
-      {% if item.audio %}{% include "components/audio_player.html" %}{% elif section.section == "listening" %}
-      <p class="rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600" data-testid="no-audio">Audio for this part hasn't been uploaded yet.</p>{% endif %}
-      {% if item.image %}<img src="{{ item.image }}" alt="Question image" class="max-h-[60vh] w-full rounded-xl border border-slate-200 bg-white object-contain" data-testid="stimulus-image">{% endif %}
-      {% if item.passage and not reading_split %}<article class="whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-relaxed">{{ item.passage }}</article>{% endif %}
-      {% if item.context %}<p class="whitespace-pre-line rounded-lg border border-slate-200 p-3 text-sm">{{ item.context }}</p>{% endif %}
-      {% include "attempts/items/"|add:item.kind|add:".html" %}
+      {% if item.instructions %}<p class="mt-1.5 font-semibold text-ink">{{ item.instructions }}</p>{% endif %}
     </div>
+
+    {% if reading_split and item.passage %}
+    <div class="mb-0 flex shrink-0 gap-1 border-b bg-white p-2 lg:hidden" role="tablist">
+      <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'passage' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'passage'">Passage</button>
+      <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'questions' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'questions'">Questions</button>
+    </div>
+    <div class="exam-split flex-1 lg:grid lg:min-h-0" :style="`--split:${split}%`">
+      <article class="exam-pane exam-passage" :class="pane === 'passage' ? 'block' : 'hidden lg:block'" @mouseup="selectText($event)" data-testid="passage">{{ item.passage|paragraphs }}</article>
+      <div class="exam-divider hidden lg:flex" @pointerdown="drag($event)" role="separator" aria-label="Resize panes"><span></span></div>
+      <div class="exam-pane exam-questions" :class="pane === 'questions' ? 'block' : 'hidden lg:block'">
+        {% include "attempts/_item_body.html" %}
+      </div>
+    </div>
+    {% elif item.kind == "writing" and item.prompt %}
+    <div class="sticky top-0 z-10 flex gap-1 border-b border-slate-200 bg-white p-2 lg:hidden" role="tablist" data-testid="writing-tabs">
+      <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'passage' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'passage'">Task</button>
+      <button type="button" class="flex-1 rounded-lg py-2 text-sm font-semibold" :class="pane === 'questions' ? 'bg-ink text-white' : 'text-slate-500'" @click="pane = 'questions'">Answer</button>
+    </div>
+    <div class="exam-split flex-1 lg:grid lg:min-h-0" :style="`--split:${split}%`">
+      <div class="exam-pane" :class="pane === 'passage' ? 'block' : 'hidden lg:block'">
+        <p class="whitespace-pre-line leading-relaxed">{{ item.prompt }}</p>
+        {% if item.image %}<img src="{{ item.image }}" alt="Task image" class="mt-4 max-h-[50vh] w-full rounded-xl border border-slate-200 bg-white object-contain" data-testid="stimulus-image">{% endif %}
+        {% if item.data_table %}{% include "attempts/_data_table.html" %}{% endif %}
+      </div>
+      <div class="exam-divider hidden lg:flex" @pointerdown="drag($event)" role="separator" aria-label="Resize panes"><span></span></div>
+      <div class="exam-pane exam-questions" :class="pane === 'questions' ? 'block' : 'hidden lg:block'">{% include "attempts/items/writing.html" with hide_prompt=True %}</div>
+    </div>
+    {% else %}
+    <div class="exam-pane exam-single flex-1 lg:min-h-0">
+      <div class="mx-auto max-w-4xl">{% include "attempts/_item_body.html" %}</div>
+    </div>
+    {% endif %}
   </form>
   {% endfor %}
-
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="flex gap-2">
-      <button type="button" class="btn-ghost disabled:opacity-40" :disabled="idx === 0" @click="go(idx - 1)" data-testid="prev">Back</button>
-      <button type="button" class="btn-ghost disabled:opacity-40" :disabled="idx === count - 1" @click="go(idx + 1)" data-testid="next">Next</button>
-    </div>
-    <div class="flex flex-wrap gap-1">{% for item in items %}<button type="button" class="h-8 w-8 rounded-lg border text-xs font-semibold transition" :class="idx === {{ forloop.counter0 }} ? 'border-brand bg-brand text-brand-fg' : 'border-slate-300'" @click="go({{ forloop.counter0 }})">{{ forloop.counter }}</button>{% endfor %}</div>
-    <button type="button" class="btn-primary" @click="confirmOpen = true" data-testid="finish-section">{% if is_last %}Submit test{% else %}Finish section{% endif %}</button>
   </div>
 
+  {# ---------- Highlighter popover ---------- #}
+  <div x-show="hl.show" x-cloak class="fixed z-30 flex gap-1 rounded-xl bg-ink p-1 shadow-2xl" :style="`left:${hl.x}px;top:${hl.y}px`">
+    <button type="button" class="rounded-lg px-3 py-1.5 text-xs font-semibold text-yellow-300 hover:bg-white/10" @mousedown.prevent="highlight()">Highlight</button>
+    <button type="button" class="rounded-lg px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10" @mousedown.prevent="clearHighlights()">Clear all</button>
+  </div>
+
+  {# ---------- Navigator ---------- #}
+  <footer class="exam-nav sticky bottom-0 z-20 shrink-0 border-t bg-white/95 backdrop-blur">
+    <div class="flex items-center gap-3 px-3 py-2.5 sm:px-5">
+      <div class="flex shrink-0 gap-1.5">
+        <button type="button" class="exam-arrow" :disabled="idx === 0" x-show="!linear" @click="go(idx - 1)" aria-label="Previous" data-testid="prev">{% include "components/icon.html" with name="arrow" cls="h-5 w-5 rotate-180" %}</button>
+        <button type="button" class="exam-arrow exam-arrow-next" :disabled="idx === count - 1" @click="go(idx + 1)" aria-label="Next" data-testid="next">{% include "components/icon.html" with name="arrow" cls="h-5 w-5" %}</button>
+      </div>
+      <div class="min-w-0 flex-1 overflow-x-auto" x-show="!linear" data-testid="navigator">
+        <div class="flex w-max items-center gap-3">
+          {% for item in items %}
+          <div class="flex items-center gap-1 rounded-xl px-1.5 py-1 transition" :class="idx === {{ forloop.counter0 }} ? 'bg-brand/10 ring-1 ring-brand/30' : ''">
+            <button type="button" class="px-1 text-[11px] font-bold whitespace-nowrap text-slate-500 uppercase hover:text-brand" @click="go({{ forloop.counter0 }})">{% if item.part %}P{{ item.part }}{% else %}{{ forloop.counter }}{% endif %}</button>
+            {% if attempt.exam.kind == "ielts" and item.kind == "questions" and item.questions|length > 1 %}
+              {% for q in item.questions %}<button type="button" class="exam-q" :class="qClass('{{ item.order }}:{{ q.key }}')" @click="jump({{ forloop.parentloop.counter0 }}, '{{ item.order }}:{{ q.key }}')" data-nav="{{ item.order }}:{{ q.key }}">{% firstof q.label forloop.counter %}</button>{% endfor %}
+            {% elif attempt.exam.kind == "ielts" and item.kind == "inline" %}
+              {% for p in item.parts %}{% if p.blank %}<button type="button" class="exam-q" :class="qClass('{{ item.order }}:{{ p.blank.key }}')" @click="jump({{ forloop.parentloop.counter0 }}, '{{ item.order }}:{{ p.blank.key }}')" data-nav="{{ item.order }}:{{ p.blank.key }}">{{ p.blank.label }}</button>{% endif %}{% endfor %}
+            {% else %}
+              <button type="button" class="exam-q" :class="qClass('{{ item.order }}:*')" @click="jump({{ forloop.counter0 }}, '{{ item.order }}:*')" data-nav="{{ item.order }}:*">{{ forloop.counter }}</button>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <p class="min-w-0 flex-1 text-sm text-slate-500" x-show="linear" x-cloak>Item <span x-text="idx + 1"></span> of {{ items|length }}</p>
+      <button type="button" class="btn-primary shrink-0" @click="confirmOpen = true" data-testid="finish-section">{% include "components/icon.html" with name="check" cls="h-4 w-4" %}<span class="hidden sm:inline">{% if is_last %}Submit test{% else %}Finish section{% endif %}</span></button>
+    </div>
+    <div class="hidden items-center gap-4 border-t border-slate-100 px-5 py-1.5 text-[11px] text-slate-500 lg:flex" x-show="!linear">
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-ink"></span>Answered</span>
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded border border-slate-300 bg-white"></span>Not answered</span>
+      <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-amber-400"></span>Flagged for review</span>
+      <span class="ml-auto"><span x-text="stats().answered"></span> of <span x-text="stats().total"></span> answered · Alt + ←/→ to move</span>
+    </div>
+  </footer>
+
   <form method="post" action="{% url 'attempts:next_section' attempt.pk %}" x-ref="advance">{% csrf_token %}<input type="hidden" name="section_index" value="{{ section_index }}"></form>
-  <div x-show="confirmOpen" x-cloak x-transition.opacity class="fixed inset-0 z-20 flex items-center justify-center bg-slate-900/40 p-4" data-testid="confirm">
-    <div class="max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-      <h2 class="text-lg font-bold">{% if is_last %}Submit your test?{% else %}Finish {{ section.label }}?{% endif %}</h2>
-      <p class="mt-2 text-sm text-slate-600">{% if is_last %}You can't change answers after submitting.{% else %}You can't come back to this section.{% endif %}</p>
-      <div class="mt-4 flex justify-end gap-2">
-        <button type="button" class="btn-ghost" @click="confirmOpen = false">Cancel</button>
+
+  {# ---------- Section intro ---------- #}
+  <div x-show="intro" x-cloak x-transition.opacity class="fixed inset-0 z-40 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm" data-testid="section-intro">
+    <div class="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl">
+      <div class="relative isolate overflow-hidden bg-aurora px-7 py-6 text-white">
+        <div class="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-60"></div>
+        <p class="text-[11px] font-semibold tracking-[0.16em] text-aurora-3 uppercase">Section {{ section_index|add:1 }} of {{ sections|length }}</p>
+        <h2 class="mt-1 font-display text-3xl font-extrabold">{{ section.label }}</h2>
+        <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-300"><span>{{ section.duration_sec|minutes }} minutes{% if section.extra_sec %} + {{ section.extra_sec|minutes }} min review{% endif %}</span><span>{{ items|length }} question set{{ items|length|pluralize }}</span></p>
+      </div>
+      <div class="space-y-4 px-7 py-6 text-sm text-slate-600">
+        {% if sg %}<p>{{ sg.format }}</p>{% endif %}
+        <ul class="space-y-2">
+          <li class="flex gap-2">{% include "components/icon.html" with name="clock" cls="h-4 w-4 mt-0.5 shrink-0 text-brand" %}The clock for this section is already running and continues if you close the page.</li>
+          <li class="flex gap-2">{% include "components/icon.html" with name="check" cls="h-4 w-4 mt-0.5 shrink-0 text-brand" %}Answers save automatically. Use the flag to mark questions to revisit.</li>
+          {% if section.section == "listening" and listening.max_plays %}<li class="flex gap-2">{% include "components/icon.html" with name="headphones" cls="h-4 w-4 mt-0.5 shrink-0 text-brand" %}Each recording plays {% if listening.max_plays == 1 %}once{% else %}{{ listening.max_plays }} times{% endif %}, as in the real test.</li>{% endif %}
+          {% if section.section == "speaking" %}<li class="flex gap-2">{% include "components/icon.html" with name="mic" cls="h-4 w-4 mt-0.5 shrink-0 text-brand" %}Use a headset if you can and speak clearly into the microphone.</li>{% endif %}
+          {% if not is_last %}<li class="flex gap-2">{% include "components/icon.html" with name="lock" cls="h-4 w-4 mt-0.5 shrink-0 text-brand" %}Once you finish this section you can't return to it.</li>{% endif %}
+        </ul>
+        {% if sg %}<p class="rounded-xl bg-brand/5 p-3 text-slate-700"><strong class="text-brand">Tip:</strong> {{ sg.tip }}</p>{% endif %}
+        <button type="button" class="btn-primary btn-lg w-full" @click="dismissIntro()" data-testid="intro-start">Start {{ section.label }}</button>
+      </div>
+    </div>
+  </div>
+
+  {# ---------- Finish confirm ---------- #}
+  <div x-show="confirmOpen" x-cloak x-transition.opacity class="fixed inset-0 z-40 grid place-items-center bg-ink/60 p-4 backdrop-blur-sm" data-testid="confirm">
+    <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl" @click.outside="confirmOpen = false">
+      <h2 class="font-display text-xl font-bold text-ink">{% if is_last %}Submit your test?{% else %}Finish {{ section.label }}?{% endif %}</h2>
+      <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div class="rounded-2xl bg-slate-50 p-3"><p class="font-display text-2xl font-extrabold text-ink" x-text="stats().answered"></p><p class="text-xs text-slate-500">Answered</p></div>
+        <div class="rounded-2xl bg-slate-50 p-3"><p class="font-display text-2xl font-extrabold" :class="stats().unanswered.length ? 'text-red-600' : 'text-ink'" x-text="stats().unanswered.length"></p><p class="text-xs text-slate-500">Unanswered</p></div>
+        <div class="rounded-2xl bg-slate-50 p-3"><p class="font-display text-2xl font-extrabold text-amber-600" x-text="stats().flagged.length"></p><p class="text-xs text-slate-500">Flagged</p></div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-1" x-show="stats().unanswered.length || stats().flagged.length">
+        <template x-for="k in [...new Set([...stats().flagged, ...stats().unanswered])]" :key="k"><button type="button" class="exam-q" :class="qClass(k)" @click="confirmOpen = false; jump(itemIndex(k), k)" x-text="navLabel(k)"></button></template>
+      </div>
+      <p class="mt-4 text-sm text-slate-600">{% if is_last %}You can't change answers after submitting.{% else %}You can't come back to this section.{% endif %} <span x-show="remaining > 0">You still have <strong x-text="clockText"></strong> left.</span></p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" class="btn-ghost" @click="confirmOpen = false">Keep working</button>
         <button type="button" class="btn-primary" @click="advance()" data-testid="confirm-yes">{% if is_last %}Submit{% else %}Finish section{% endif %}</button>
       </div>
+    </div>
+  </div>
+
+  {# ---------- Help ---------- #}
+  <div x-show="help" x-cloak x-transition.opacity class="fixed inset-0 z-40 grid place-items-center bg-ink/60 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl" @click.outside="help = false">
+      <h2 class="font-display text-xl font-bold text-ink">How this screen works</h2>
+      <ul class="mt-4 space-y-3 text-sm text-slate-600">
+        <li><strong class="text-ink">Navigate</strong> with the arrows, the question numbers at the bottom, or Alt + ← / →.</li>
+        <li><strong class="text-ink">Flag</strong> a question to come back to it; flagged numbers turn amber.</li>
+        <li><strong class="text-ink">Highlight</strong> text in a reading passage by selecting it.</li>
+        <li><strong class="text-ink">Resize</strong> the passage and questions by dragging the divider.</li>
+        <li><strong class="text-ink">Settings</strong> change text size and colours.</li>
+        <li><strong class="text-ink">Timer</strong> is kept on the server; when it reaches zero the section ends and your saved answers are kept.</li>
+      </ul>
+      <button type="button" class="btn-primary mt-5 w-full" @click="help = false">Got it</button>
     </div>
   </div>
 </section>
