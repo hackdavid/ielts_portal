@@ -36,6 +36,13 @@ uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
 
+Or start from the QA demo data (catalogue, audio, demo logins; see `data/README.md`):
+
+```bash
+uv run python scripts/setup_demo_data.py   # skips steps already done
+uv run python manage.py runserver
+```
+
 Open http://127.0.0.1:8000/ (admin at `/admin/`). Settings read `DJANGO_*` env vars (see `.env.example`).
 
 ## Tailwind

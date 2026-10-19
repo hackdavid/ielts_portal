@@ -15,10 +15,13 @@ Dev-only logins (never use these anywhere real):
 ## Use it
 
 ```bash
-cp data/qa_demo.sqlite3 db.sqlite3      # work on a copy; db.sqlite3 is gitignored
-mkdir -p media && cp -r data/media/. media/
-uv run python manage.py migrate          # applies any newer migrations
-MEDIA_STORAGE=local uv run python manage.py runserver
+uv run python scripts/setup_demo_data.py   # copies db + media if missing, then migrates
+uv run python manage.py runserver
 ```
+
+The script skips anything already in place, so it is safe to re-run. `--force`
+replaces an existing `db.sqlite3` (the old one is kept as `db.sqlite3.bak`). It honours
+`DJANGO_SQLITE_PATH`. If `R2_BUCKET_NAME` is set in your shell, start the server with
+`MEDIA_STORAGE=local` so the local media files are used.
 
 Firebase isn't needed: sign in at `/admin/login/` (admin) or use a Django session.
