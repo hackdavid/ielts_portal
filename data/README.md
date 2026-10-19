@@ -24,4 +24,4 @@ replaces an existing `db.sqlite3` (the old one is kept as `db.sqlite3.bak`). It 
 `DJANGO_SQLITE_PATH`. If `R2_BUCKET_NAME` is set in your shell, start the server with
 `MEDIA_STORAGE=local` so the local media files are used.
 
-Firebase isn't needed: sign in at `/admin/login/` (admin) or use a Django session.
+Firebase isn't needed: both users sign in at `/admin/login/` (`student` has staff status with no admin permissions, only so it can use that login), then open `/` or `/exams/`.
