@@ -4,5 +4,5 @@ __pycache__/
 .env
 db.sqlite3
 staticfiles/
-media/
+/media/
 .ruff_cache/
